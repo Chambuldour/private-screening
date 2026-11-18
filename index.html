@@ -9,7 +9,7 @@
 <meta property="og:description" content="A holiday movie starring you. Press play — popcorn optional.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Courier+Prime:wght@400;700&family=Inter:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
 <style>
   :root {
     --night: #1c0d0c;
@@ -185,6 +185,7 @@
   .trailer-card.big.in { animation: cardIn var(--dur, 3s) linear forwards, shine 2.6s ease-in-out .5s forwards; }
   @keyframes shine { to { background-position: 0 0; } }
   .trailer-card.credit-card { font-size: clamp(1.1rem, 4.5vw, 1.6rem); font-weight: 400; }
+  .trailer-card.credit-card .aside { font-size: .62em; line-height: 1.5; }
   .trailer-card.dialog-card { font-style: italic; font-weight: 400; font-size: clamp(1.2rem, 5vw, 1.8rem); }
   .trailer-card.caps-card { font-family: 'Inter', sans-serif; font-weight: 600; font-size: clamp(.85rem, 3.4vw, 1.1rem); letter-spacing: .35em; text-transform: uppercase; }
   .trailer-skip-run { display: none; position: fixed; right: 16px; bottom: 3vh; z-index: 45; margin: 0; }
@@ -240,6 +241,21 @@
   .controls input { width: 100%; accent-color: var(--gold); height: 28px; }
   .game-msg { min-height: 3em; max-width: 520px; line-height: 1.5; margin: 14px 0 0; }
   .game-msg code { font-family: 'Courier Prime', monospace; color: var(--gold); }
+
+  /* ---------- LETTER (the sincere part) ---------- */
+  .letter-pre { margin: 0 0 18px; font-style: italic; }
+  .letter {
+    width: min(100%, 520px); text-align: left;
+    background: #fff8ec; color: #3a2418;
+    font-family: 'Caveat', cursive; font-weight: 500; font-size: 1.55rem; line-height: 1.35;
+    padding: 28px 28px 24px; border-radius: 6px; transform: rotate(-.8deg);
+    box-shadow: 0 30px 80px rgba(0,0,0,.5);
+  }
+  .letter p { margin: 0 0 12px; opacity: 0; transform: translateY(6px); transition: opacity 1s, transform 1s; }
+  .letter p.show { opacity: 1; transform: none; }
+  .letter .sign { text-align: right; font-weight: 700; margin: 6px 0 0; }
+  #toAsk { margin-top: 28px; opacity: 0; pointer-events: none; transition: opacity .8s; }
+  #toAsk.show { opacity: 1; pointer-events: auto; }
 
   /* ---------- QUESTION ---------- */
   .question h2 { font-size: clamp(2rem, 8vw, 3.3rem); line-height: 1.15; max-width: 720px; }
@@ -376,7 +392,7 @@
     <p class="tagline" style="animation-delay:2.4s">No house swap. No cottage in Surrey.<br>Just one random Belgian supermarket<br>and a probability too small to ignore.</p>
     <div class="reviews" style="animation-delay:2.9s">
       <b>★★★★★</b> “A leading lady, not the best friend.” — <i>An old Hollywood screenwriter</i><br>
-      <b>★★★★★</b> “I'm a weeper. I wept.” — <i>A widowed book editor</i><br>
+      <b>★★★★★</b> “Her favourite movie finally got a sequel.” — <i>The leading lady (probably)</i><br>
       <b>★★★★★</b> “Otterly adorable.” — <i>The otters 🦦</i>
     </div>
     <div style="animation-delay:3.3s"><button class="btn" id="playBtn">▶ Press play</button></div>
@@ -390,16 +406,17 @@
     <p class="slug">FADE IN:</p>
     <p class="slug">INT. A RANDOM BELGIAN SUPERMARKET – MIDDAY</p>
     <p>Fluorescent lights hum over the fish section. Outside, a Belgian summer: 29 degrees, zero snow, not a fairy light in sight. It's no English cottage in the snow, but the lighting is doing its best.</p>
-    <p><span data-her-upper></span>, physicist and undefeated baking legend, is deep in thought at the fish counter. <span data-you-upper></span> turns the corner with a shopping basket and zero plan. They haven't seen each other since physics class.</p>
+    <p><span data-her-upper></span>, physicist, baker and knitter, walks down the aisle with her SISTER. She's about to walk right past <span data-you-upper></span>, who is there with his FRIEND.</p>
     <p class="char"><span data-you-upper></span></p>
-    <p class="paren">(clears throat, nervous)</p>
-    <p class="dialog">I calculated the odds of running into you here on the back of my receipt. They're tiny. Statistically, that's not a coincidence anymore. That's a sign.</p>
+    <p class="paren">(before he can overthink it)</p>
+    <p class="dialog">Hi!</p>
+    <p><span data-her-upper></span> stops. Recognition. A smile. They haven't seen each other in years. Not since the physics lab, where they had to sit 1.5 meters apart and keep a hot-air balloon in the air.</p>
+    <p>Five minutes of catching up. How's life? What happened since? Behind them, her SISTER and his FRIEND exchange a look. Neither has any idea what's going on.</p>
     <p class="char"><span data-you-upper></span> (V.O.)</p>
     <p class="paren">(deep movie-trailer voice, clearly practised)</p>
-    <p class="dialog">One summer... two old physics classmates... one fish counter... and the most improbable meet-cute in Belgian history. This Christmas... the sequel.</p>
-    <p class="char"><span data-you-upper></span></p>
-    <p class="paren">(normal voice, immediately)</p>
-    <p class="dialog">Sorry. I panicked. Something smelled fishy... turns out it was just fate.</p>
+    <p class="dialog">One summer... one fish counter... one “hi”... and the most improbable meet-cute in Belgian history. This Christmas... the sequel.</p>
+    <p class="slug">MONTAGE – THE NEXT MONTHS</p>
+    <p>Texting. Hanging out. More texting. Laughing at the same stupid jokes. Phones permanently at 3% battery.</p>
     <p>But first, a small physics problem stands in the way of true love.</p>
     <p class="right">SMASH CUT TO:</p>
   </div>
@@ -409,8 +426,8 @@
 
 <!-- SCENE 2.5: OTTER-LAUNCH PHYSICS GAME -->
 <section class="scene game" id="scene-game">
-  <h2>Intermission: a small physics problem</h2>
-  <p class="muted game-intro">Otters hold hands so they don't drift apart. This one drifted. Launch it back to its partner. 🦦 ➜ 🦦<br>
+  <h2>Intermission: practical #2</h2>
+  <p class="muted game-intro">Remember the hot-air balloon practical? This one's easier, and no 1.5 meters required. 🎈<br>Otters hold hands so they don't drift apart. This one drifted. Launch it back to its partner. 🦦 ➜ 🦦<br>
     <span class="eq">g = 9.81 m/s² · no air resistance (it's a movie)</span></p>
   <canvas id="gameCanvas" aria-label="Otter launch game"></canvas>
   <div class="controls">
@@ -420,6 +437,21 @@
   <button class="btn" id="launchBtn">🚀 Launch otter</button>
   <p class="game-msg" id="gameMsg" role="status"></p>
   <button class="skip" id="skipGame">skip the physics, I'm here for the question</button>
+</section>
+
+<!-- SCENE 2.75: THE LETTER (no jokes) -->
+<section class="scene" id="scene-letter">
+  <p class="letter-pre muted">Okay. No jokes for a moment.</p>
+  <div class="letter" id="letter">
+    <p><span data-her></span>,</p>
+    <p>You always want to understand me, and you're one of the most caring people I know.</p>
+    <p>We think the same way, we laugh at the same things, and joking around with you is one of my favourite things to do.</p>
+    <p>I also have a very soft spot for you in your glasses and a lab coat. And the way you push your glasses up so they don't slide off? Unfairly cute.</p>
+    <p>You're just beautiful.</p>
+    <p>So I'm really glad I said hi that day. And I have one question for you…</p>
+    <p class="sign">– <span data-you></span></p>
+  </div>
+  <button class="btn" id="toAsk">I'm ready ➜</button>
 </section>
 
 <!-- SCENE 3: THE QUESTION -->
@@ -551,8 +583,10 @@ const CONFIG = {
     "🍿 Movie marathon + blankets",
     "🎮 Playing It Takes Two together",
     "💬 A getting-to-know-each-other game",
+    "📺 Taskmaster marathon",
+    "🧶 Knitting + hot chocolate night (you teach me)",
     "🎬 Cinema",
-    "⛳ Mini golf",
+    "⛳ Mini golf (I'll go easy on you. Maybe.)",
     "🎳 Bowling",
     "🕹️ Arcade",
     "⛸️ Ice skating",
@@ -569,6 +603,7 @@ const CONFIG = {
     "👕 Casual",
     "🧶 Cozy sweaters",
     "🎄 Christmas sweater",
+    "🧣 Something you knitted yourself",
     "✨ Fancy, let's dress up",
     "🧦 Pajamas & fluffy socks",
   ],
@@ -604,7 +639,7 @@ function show(id) {
 /* ---------- Peeking otter: pops up with a comment on every scene ---------- */
 const PEEK_LINES = {
   poster: 'psst… press play 🍿',
-  script: 'the fish section, huh? 🐟',
+  script: 'he said hi first! 👋',
   game: 'aim for my partner! 🎯',
   question: 'say yes 🥺',
   yes: 'we hold hands now 🦦💞',
@@ -741,6 +776,19 @@ function startQuestion() {
 }
 $('#toQuestion').addEventListener('click', () => { show('game'); game.init(); });
 
+/* The letter: the one sincere moment, revealed line by line */
+function showLetter() {
+  show('letter');
+  let t = 700;
+  $$('#letter p').forEach(p => {
+    p.classList.remove('show');
+    setTimeout(() => { p.classList.add('show'); p.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, t);
+    t += Math.min(3400, Math.max(1100, p.textContent.length * 40));
+  });
+  setTimeout(() => { $('#toAsk').classList.add('show'); $('#toAsk').scrollIntoView({ behavior: 'smooth', block: 'center' }); }, t);
+}
+$('#toAsk').addEventListener('click', startQuestion);
+
 /* ---------- Otter-launch physics game (projectile motion) ---------- */
 const game = (() => {
   const cv = $('#gameCanvas'), ctx = cv.getContext('2d');
@@ -848,8 +896,8 @@ const game = (() => {
   }
   angleIn.addEventListener('input', () => { $('#angleVal').textContent = angleIn.value + '°'; draw(); });
   speedIn.addEventListener('input', () => { $('#speedVal').textContent = (+speedIn.value).toFixed(1) + ' m/s'; draw(); });
-  btn.addEventListener('click', () => { if (won) startQuestion(); else launch(); });
-  $('#skipGame').addEventListener('click', startQuestion);
+  btn.addEventListener('click', () => { if (won) showLetter(); else launch(); });
+  $('#skipGame').addEventListener('click', showLetter);
   addEventListener('resize', () => { if (ready) size(); });
   return {
     init() {
@@ -868,6 +916,8 @@ const noTexts = [
   "That violates conservation of energy ⚡",
   "Entropy says this ends in yes",
   "Error 404: 'No' not found",
+  "That's a bogey. Go for the birdie ⛳",
+  "Keep 1.5 meters from this button 😷",
   "The otters are disappointed 🦦",
   "Leading ladies don't say no",
   "Graham is crying now (he's a weeper)",
@@ -1302,24 +1352,24 @@ const TRAILER = [
   { at: 0,    dur: 3.6, cls: 'approval', text: 'The following preview has been approved for<br><b>one (1) very specific viewer</b>' },
   { at: 4.2,  dur: 3.4, cls: 'studio', text: `${CONFIG.yourName.toUpperCase()} PICTURES<span class="aside">presents</span>` },
   { at: 8.0,  dur: 2.8, text: 'Coming soon…' },
-  { at: 11.0, dur: 3.2, text: 'Years ago, they shared a physics classroom.' },
-  { at: 14.4, dur: 3.2, text: 'The same exams. The same lab reports…' },
-  { at: 17.8, dur: 3.8, text: '…and the same professor’s terrible jokes.<span class="aside">(Some people never recovered. Keep watching.)</span>' },
+  { at: 11.0, dur: 3.2, text: 'Years ago, they shared a physics classroom…' },
+  { at: 14.4, dur: 3.2, text: '…from 1.5 meters apart.<span class="aside">(Thanks, COVID.)</span>' },
+  { at: 17.8, dur: 3.8, text: 'Same exams. Same lab reports.<br>One hot-air balloon practical.<span class="aside">(Something was already floating. They just didn’t know it yet.)</span>' },
   { at: 21.8, dur: 3.2, text: 'Then life happened.' },
   { at: 25.4, dur: 3.2, text: 'Until one summer midday…', mood: 'summer' },
-  { at: 28.8, dur: 3.4, text: '29 degrees. Zero snow.<span class="aside">Not exactly a Christmas movie set.</span>' },
-  { at: 32.4, dur: 3.2, text: '…in a random Belgian supermarket…' },
-  { at: 35.8, dur: 4.2, hit: true, text: '…they ran into each other in the fish section.<span class="aside">Plenty of fish in the sea. Only one that mattered.</span>' },
-  { at: 40.4, dur: 2.8, text: 'She bakes like a legend.', mood: 'none' },
-  { at: 43.4, dur: 3.8, text: 'He tells dad jokes without even being a dad.<span class="aside">(He already has three fish puns ready. Sorry in advance.)</span>' },
-  { at: 47.4, dur: 2.4, hit: true, text: 'One question.' },
-  { at: 50.0, dur: 2.0, text: 'Two buttons.' },
-  { at: 52.2, dur: 2.6, text: 'And one of them…<br>runs away.' },
+  { at: 28.8, dur: 3.4, text: '…in a random Belgian supermarket.<span class="aside">29 degrees. Zero snow. Not exactly a Christmas movie set.</span>' },
+  { at: 32.4, dur: 3.2, text: 'In the fish section, she was about to walk right past him…' },
+  { at: 35.8, dur: 4.2, hit: true, text: '…until he said “Hi.”<span class="aside">(Adele would be proud.)</span>' },
+  { at: 40.4, dur: 3.2, text: 'Five minutes of catching up.<span class="aside">Her sister and his friend had absolutely no idea what was happening.</span>', mood: 'none' },
+  { at: 43.8, dur: 2.8, text: 'Then came the texts.<br>And the hangouts.<br>And more texts.' },
+  { at: 46.8, dur: 2.2, hit: true, text: 'One question.' },
+  { at: 49.2, dur: 2.0, text: 'Two buttons.' },
+  { at: 51.4, dur: 2.8, text: 'And one of them…<br>runs away.' },
   /* 54.8 – 56.0: one second of black and silence */
   { at: 56.0, dur: 3.4, hit: true, cls: 'xl', text: 'This Christmas…', mood: 'christmas' },
-  { at: 59.6, dur: 2.8, cls: 'credit-card', text: `Starring <b>${HER}</b><br>as the leading lady` },
-  { at: 62.6, dur: 2.8, cls: 'credit-card', text: `Co-starring <b>${CONFIG.yourName}</b><br>as the guy with the dad jokes` },
-  { at: 65.6, dur: 3.6, cls: 'credit-card', text: 'From the studio that brought you<br><i>“Rehearsing in the Mirror”</i><br>and <i>“Waiting for the Right Moment”</i>' },
+  { at: 59.6, dur: 2.8, cls: 'credit-card', text: `Starring <b>${HER}</b><br>as the leading lady<span class="aside">Bakes like a legend. Knits like a pro. Pushes up her glasses like nobody else.</span>` },
+  { at: 62.6, dur: 2.8, cls: 'credit-card', text: `Co-starring <b>${CONFIG.yourName}</b><br>as the guy who said hi first<span class="aside">Dad jokes. Golf. Zero chill.</span>` },
+  { at: 65.6, dur: 3.6, cls: 'credit-card', text: 'From the studio that brought you<br><i>“Rehearsing in the Mirror”</i><br>and <i>“Almost Letting Her Walk Past”</i>' },
   { at: 69.6, dur: 4.6, hit: true, cls: 'big', text: 'The Holi-date' },
   { at: 74.6, dur: 3.6, cls: 'dialog-card', text: '“Wait… was that a fish pun?”<br>“Only a small-fry one.”' },
   { at: 78.6, dur: 3.4, cls: 'caps-card', text: 'Coming to a cozy place near you' },
