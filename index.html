@@ -125,6 +125,10 @@
   .maestro iframe { border-radius: 12px; display: block; }
   .maestro.nudge { border-radius: 14px; animation: nudge 1.6s ease-in-out infinite; }
   @keyframes nudge { 50% { box-shadow: 0 0 0 4px rgba(245,199,107,.55), 0 0 28px rgba(245,199,107,.35); } }
+  .maestro-link { display: none; padding: 16px; border-radius: 12px; background: #1db954; color: #04210f; font-weight: 700; text-decoration: none; text-align: center; }
+  .maestro.blocked { min-height: 0; }
+  .maestro.blocked #maestroEmbed { display: none; }
+  .maestro.blocked .maestro-link { display: block; }
   .tap-hint { display: none; margin: -4px 0 4px; color: var(--gold); font-weight: 600; font-size: .92rem; line-height: 1.5; }
   .tap-hint.on { display: block; }
 
@@ -349,7 +353,8 @@
     <div class="presents"><span data-studio></span> presents</div>
     <h2>Before the feature presentation…</h2>
     <p class="muted">an 80-second trailer. Turn your sound on. 🔊<br>Soundtrack: “Maestro” by Hans Zimmer, from your favourite movie.</p>
-    <div class="maestro"><div id="maestroEmbed"></div></div>
+    <div class="maestro"><div id="maestroEmbed"></div>
+      <a class="maestro-link" id="maestroLink" href="https://open.spotify.com/track/03ib2ZaOZzq6iAFuiDhSzp" target="_blank" rel="noopener">🎧 Play “Maestro” on Spotify ↗</a></div>
     <p class="tap-hint" id="tapHint">👆 Tap the ▶ in the Spotify player above.<br>The trailer starts together with the music.</p>
     <button class="btn" id="trailerPlay">▶ Watch the trailer</button>
     <button class="btn ghost" id="trailerMuted">Watch without sound</button>
@@ -1173,9 +1178,19 @@ window.onSpotifyIframeApiReady = api => {
     });
   });
 };
+// If a browser or ad blocker stops Spotify's player from loading, show a plain Spotify link instead
+const spotifyBlocked = () => !maestro;
+setTimeout(() => {
+  if (!spotifyBlocked()) return;
+  $('.maestro').classList.add('blocked');
+  $('#tapHint').innerHTML = 'Your browser is blocking the Spotify player.<br>Start “Maestro” in Spotify above, then tap <b>Watch the trailer</b>.';
+  $('#tapHint').classList.add('on');
+}, 6000);
 async function startTrailerWithMusic() {
   const btn = $('#trailerPlay');
-  if (maestroPlaying) return playTrailer();
+  if (maestroPlaying || $('.maestro').classList.contains('blocked')) return playTrailer();
+  for (let i = 0; i < 40 && !maestro; i++) await wait(100); // the player may still be loading
+  if (!maestro) return playTrailer();
   try { maestro && maestro.play(); } catch { /* she'll tap the player instead */ }
   btn.disabled = true; btn.textContent = '🎵 Cueing the music…';
   for (let i = 0; i < 25 && !maestroPlaying; i++) await wait(100);
