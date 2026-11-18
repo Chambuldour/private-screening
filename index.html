@@ -129,6 +129,10 @@
   .maestro.blocked { min-height: 0; }
   .maestro.blocked #maestroEmbed { display: none; }
   .maestro.blocked .maestro-link { display: block; }
+  .start-cue { margin: 4px 0 2px; color: var(--gold); font-family: 'Playfair Display', serif; font-weight: 700; font-size: clamp(1.15rem, 4.6vw, 1.5rem); }
+  .start-cue .play-dot { display: inline-flex; align-items: center; justify-content: center; width: 1.5em; height: 1.5em; border-radius: 50%;
+    background: var(--gold); color: #2a120a; font-size: .8em; vertical-align: .1em; padding-left: .12em; }
+  .soundtrack-credit { font-size: .85rem; margin: -6px 0 6px !important; }
   .tap-hint { display: none; margin: -4px 0 4px; color: var(--gold); font-weight: 600; font-size: .92rem; line-height: 1.5; }
   .tap-hint.on { display: block; }
 
@@ -352,11 +356,13 @@
   <div class="trailer-start" id="trailerStart">
     <div class="presents"><span data-studio></span> presents</div>
     <h2>Before the feature presentation…</h2>
-    <p class="muted">an 80-second trailer. Turn your sound on. 🔊<br>Soundtrack: “Maestro” by Hans Zimmer, from your favourite movie.</p>
-    <div class="maestro"><div id="maestroEmbed"></div>
+    <p class="muted">an 80-second trailer. Turn your sound on. 🔊</p>
+    <p class="start-cue" id="startCue">Press <span class="play-dot">▶</span> on the song to start the trailer</p>
+    <div class="maestro nudge"><div id="maestroEmbed"></div>
       <a class="maestro-link" id="maestroLink" href="https://open.spotify.com/track/03ib2ZaOZzq6iAFuiDhSzp" target="_blank" rel="noopener">🎧 Play “Maestro” on Spotify ↗</a></div>
-    <p class="tap-hint" id="tapHint">👆 Tap the ▶ in the Spotify player above.<br>The trailer starts together with the music.</p>
-    <button class="btn" id="trailerPlay">▶ Watch the trailer</button>
+    <p class="soundtrack-credit muted">Soundtrack: “Maestro” by Hans Zimmer, from your favourite movie.</p>
+    <p class="tap-hint" id="tapHint"></p>
+    <button class="btn" id="trailerPlay" style="display:none">▶ Watch the trailer</button>
     <button class="btn ghost" id="trailerMuted">Watch without sound</button>
     <button class="skip" id="trailerSkip">skip trailer</button>
   </div>
@@ -1183,6 +1189,8 @@ const spotifyBlocked = () => !maestro;
 setTimeout(() => {
   if (!spotifyBlocked()) return;
   $('.maestro').classList.add('blocked');
+  $('#startCue').style.display = 'none';
+  $('#trailerPlay').style.display = '';
   $('#tapHint').innerHTML = 'Your browser is blocking the Spotify player.<br>Start “Maestro” in Spotify above, then tap <b>Watch the trailer</b>.';
   $('#tapHint').classList.add('on');
 }, 6000);
