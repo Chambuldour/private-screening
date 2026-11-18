@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>The Holi-date</title>
-<meta name="description" content="Now showing: a holiday movie starring you. Press play.">
-<meta property="og:title" content="🎬 Now showing: The Holi-date">
-<meta property="og:description" content="A holiday movie starring you. Press play — popcorn optional.">
+<title>Becx Productions · Private screening</title>
+<meta name="description" content="A private screening for one (1) very specific viewer. Press play.">
+<meta property="og:title" content="🎬 Becx Productions · Private screening">
+<meta property="og:description" content="For one (1) very specific viewer. Sound on, popcorn optional.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Courier+Prime:wght@400;700&family=Inter:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
@@ -528,7 +528,7 @@
     <div class="credit-list" id="creditList"></div>
     <div class="credit-actions">
       <button class="btn wa" id="waBtn">📲 Send to the director</button>
-      <p class="muted" style="margin:0;font-size:.82rem;max-width:340px">WhatsApp opens with your answers ready. Pick <span data-you></span>'s chat and tap send. 🎬</p>
+      <p class="muted" style="margin:0;font-size:.82rem;max-width:340px"><span id="waHint">Your credits are turned into a picture. Pick WhatsApp, then <span data-you></span>'s chat, and tap send. 🎬</span></p>
       <button class="btn ghost" id="copyBtn">Copy as text</button>
       <button class="skip" id="editBtn">← back to editing</button>
       <a class="soundtrack" href="https://open.spotify.com/track/03ib2ZaOZzq6iAFuiDhSzp" target="_blank" rel="noopener">🎧 Listen to “Maestro” again on Spotify</a>
@@ -611,7 +611,7 @@ $$('[data-you]').forEach(el => el.textContent = CONFIG.yourName);
 $$('[data-studio]').forEach(el => el.textContent = CONFIG.studio);
 $$('[data-her-upper]').forEach(el => el.textContent = CONFIG.herName.toUpperCase());
 $$('[data-you-upper]').forEach(el => el.textContent = CONFIG.yourName.toUpperCase());
-document.title = `The Holi-date · starring ${CONFIG.herName}`;
+document.title = `${CONFIG.studio} · Private screening`;
 
 /* ---------- Scene switching ---------- */
 function show(id) {
@@ -1092,6 +1092,31 @@ function rollCredits() {
   list.appendChild(disc);
   setTimeout(() => disc.classList.add('show'), 300 + rows.length * 600);
   setTimeout(() => $('#postCredits').classList.add('show'), 1200 + rows.length * 600);
+  creditsImage = null;
+  setTimeout(renderCreditsImage, 1400 + rows.length * 600);
+}
+
+/* The credits, exactly as on screen, as a picture (made in advance, so sharing is instant) */
+let creditsImage = null, rendering = null;
+function renderCreditsImage() {
+  if (!window.html2canvas) return Promise.resolve(null);
+  rendering = html2canvas($('.credits'), {
+    scale: 2, backgroundColor: '#1c0d0c', useCORS: true, logging: false,
+    ignoreElements: el => el.classList && (el.classList.contains('credit-actions') || el.id === 'postCredits'),
+    onclone: doc => {
+      const c = doc.querySelector('.credits');
+      Object.assign(c.style, { padding: '40px 34px 30px', textAlign: 'center',
+        background: 'radial-gradient(ellipse at 50% 115%, #6b2a1e 0%, #3a1416 40%, #220c0e 72%, #140708 100%)' });
+      doc.querySelectorAll('.credit').forEach(d => { d.style.opacity = 1; d.style.transform = 'none'; d.style.transition = 'none'; });
+      const f = doc.createElement('p');
+      f.textContent = '🎬 Becx Productions · 🦦';
+      Object.assign(f.style, { marginTop: '22px', fontSize: '.8rem', letterSpacing: '.2em', color: '#f5c76b' });
+      c.appendChild(f);
+    },
+  }).then(cv => new Promise(r => cv.toBlob(r, 'image/png')))
+    .then(blob => (creditsImage = blob ? new File([blob], 'date-booking.png', { type: 'image/png' }) : null))
+    .catch(() => null);
+  return rendering;
 }
 
 function messageText() {
@@ -1112,12 +1137,27 @@ function messageText() {
   ].filter(l => l !== null).join('\n');
 }
 
-$('#waBtn').addEventListener('click', () => {
+function openWhatsAppText(extra = '') {
   const num = CONFIG.whatsappNumber.replace(/\D/g, '');
-  const text = encodeURIComponent(messageText());
+  const text = encodeURIComponent(messageText() + extra);
   // Without a number, WhatsApp opens and lets her pick the chat herself.
-  const url = num ? `https://wa.me/${num}?text=${text}` : `https://wa.me/?text=${text}`;
-  window.open(url, '_blank');
+  window.open(num ? `https://wa.me/${num}?text=${text}` : `https://wa.me/?text=${text}`, '_blank');
+}
+$('#waBtn').addEventListener('click', async () => {
+  const file = creditsImage || await (rendering || renderCreditsImage());
+  // Phones (and most browsers): the share sheet sends the picture straight to WhatsApp
+  if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file] }); return; }
+    catch (e) { if (e.name === 'AbortError') return; /* otherwise fall through */ }
+  }
+  // Computers without a share sheet: save the picture, then open WhatsApp to attach it
+  if (file) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(file); a.download = file.name; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    $('#waHint').innerHTML = 'The picture is saved (<b>date-booking.png</b>). Attach it in ' + CONFIG.yourName + '\'s chat with 📎 and tap send. 🎬';
+    setTimeout(() => openWhatsAppText('\n\n📎 (picture attached)'), 600);
+  } else openWhatsAppText();
 });
 $('#copyBtn').addEventListener('click', async () => {
   try {
@@ -1306,6 +1346,8 @@ console.log('%c👀 Inspecting the source code?', 'font-size:18px;font-weight:bo
 console.log(`%cOf course you are. That's exactly why I asked you out, ${CONFIG.herName}. 💚`, 'font-size:13px');
 console.log('%cIn a universe full of variables, you are my favourite constant. 🦦', 'font-size:13px;font-style:italic');
 </script>
+<!-- html2canvas: turns the credits into a picture for WhatsApp -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 <!-- Official YouTube player API: plays the official "Maestro" video -->
 <script src="https://www.youtube.com/iframe_api" async></script>
 </body>
