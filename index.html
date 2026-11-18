@@ -110,24 +110,86 @@
   .btn.wa { background: #25d366; color: #062b14; box-shadow: 0 6px 24px rgba(37, 211, 102, .35); }
 
   /* ---------- TRAILER ---------- */
-  .trailer { background: #000; z-index: 2; }
-  .trailer-start { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .trailer { background: #000; z-index: 2; transition: background-color 2s ease; }
+  .trailer.mood-christmas { background: rgba(0, 0, 0, .5); } /* lets the real snow + fireplace glow through */
+  .bar { transition: height 1.2s ease; }
+  body.in-trailer .bar { height: 11vh; } /* widescreen 2.39:1 letterbox during the trailer */
+  .trailer-start { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 14px; }
   .trailer-start h2 { font-size: clamp(1.8rem, 7vw, 2.6rem); color: var(--gold); margin-top: 8px; }
   .trailer-start .muted { margin: 0 0 10px; }
-  .trailer-card {
-    display: none; max-width: 680px;
-    font-family: 'Playfair Display', serif; font-weight: 700;
-    font-size: clamp(1.7rem, 7vw, 3rem); line-height: 1.25;
-    opacity: 0; transform: scale(.96);
-    transition: opacity .7s ease, transform 3.5s linear;
+
+  /* film look */
+  .fx { position: fixed; pointer-events: none; }
+  .fx.vignette { inset: 0; z-index: 30; background: radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,.8) 100%); }
+  .fx.grain {
+    inset: -20%; z-index: 31; opacity: .1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grain .4s steps(4) infinite;
   }
-  .trailer-card.show { opacity: 1; transform: scale(1.05); }
-  .trailer-card.big { font-style: italic; font-size: clamp(2.8rem, 13vw, 5.5rem); color: var(--gold); text-shadow: 0 0 40px rgba(245,199,107,.45); }
-  .trailer-card.caps { font-family: 'Inter', sans-serif; font-size: clamp(.95rem, 3.6vw, 1.2rem); letter-spacing: .3em; text-transform: uppercase; font-weight: 600; }
-  .trailer-card.credit-card { font-size: clamp(1.1rem, 4.5vw, 1.6rem); font-weight: 400; }
-  .trailer-card .aside { display: block; margin-top: 10px; font-family: 'Inter', sans-serif; font-size: .45em; font-weight: 400; color: var(--muted); }
+  @keyframes grain { 0% { transform: translate(0, 0); } 25% { transform: translate(-4%, 3%); } 50% { transform: translate(3%, -4%); } 75% { transform: translate(-2%, -2%); } 100% { transform: translate(0, 0); } }
+  .fx.flare { inset: -10%; z-index: 1; opacity: 0; transition: opacity 3s ease; animation: drift 12s ease-in-out infinite alternate; }
+  .fx.flare.sun {
+    background:
+      radial-gradient(circle at 80% 20%, rgba(255,220,150,.6) 0%, rgba(255,170,80,.25) 14%, transparent 40%),
+      radial-gradient(circle at 62% 38%, rgba(255,200,120,.18) 0%, transparent 9%),
+      radial-gradient(circle at 44% 56%, rgba(255,190,110,.12) 0%, transparent 6%),
+      linear-gradient(180deg, rgba(255,150,60,.18), transparent 60%);
+  }
+  .fx.flare.xmas {
+    filter: blur(4px);
+    background:
+      radial-gradient(circle at 18% 28%, rgba(217,83,74,.45), transparent 9%),
+      radial-gradient(circle at 82% 62%, rgba(63,143,98,.45), transparent 10%),
+      radial-gradient(circle at 58% 14%, rgba(247,200,115,.4), transparent 7%),
+      radial-gradient(circle at 30% 78%, rgba(247,200,115,.3), transparent 8%),
+      radial-gradient(circle at 74% 30%, rgba(217,83,74,.3), transparent 6%);
+  }
+  .trailer.mood-summer .fx.flare.sun, .trailer.mood-christmas .fx.flare.xmas { opacity: 1; }
+  @keyframes drift { to { transform: translate(-3%, 2%) scale(1.08); } }
+  .fx.flash { inset: 0; z-index: 32; background: #fff; opacity: 0; }
+  .fx.flash.go { animation: flash .6s ease-out; }
+  @keyframes flash { 0% { opacity: .8; } 100% { opacity: 0; } }
+
+  /* title cards */
+  .trailer-stage { display: none; position: fixed; inset: 0; z-index: 3; align-items: center; justify-content: center; padding: 12vh 24px; pointer-events: none; }
+  .trailer-stage.on { display: flex; }
+  .trailer-card {
+    max-width: 760px; text-align: center;
+    font-family: 'Playfair Display', serif; font-weight: 700;
+    font-size: clamp(1.6rem, 6.4vw, 3rem); line-height: 1.25;
+    opacity: 0;
+  }
+  .trailer-card.in { animation: cardIn var(--dur, 3s) linear forwards; }
+  @keyframes cardIn {
+    0%   { opacity: 0; filter: blur(10px); transform: scale(.96); }
+    14%  { opacity: 1; filter: blur(0); }
+    84%  { opacity: 1; filter: blur(0); }
+    100% { opacity: 0; filter: blur(6px); transform: scale(1.05); }
+  }
+  .trailer-card .aside { display: block; margin-top: 12px; font-family: 'Inter', sans-serif; font-size: .42em; font-weight: 400; color: var(--muted); }
   .trailer-card b { color: var(--gold); }
-  .trailer-skip-run { display: none; position: fixed; right: 16px; bottom: calc(3.5vh + 12px); z-index: 45; }
+  .trailer-card.approval {
+    font-family: 'Inter', sans-serif; font-weight: 600; font-size: clamp(.78rem, 3.1vw, 1rem);
+    text-transform: uppercase; letter-spacing: .22em; line-height: 1.9; color: var(--gold);
+    border: 2px solid var(--gold); padding: 22px 26px; max-width: 520px;
+  }
+  .trailer-card.studio { font-family: 'Inter', sans-serif; font-size: clamp(1.1rem, 5vw, 1.9rem); letter-spacing: .5em; text-shadow: 0 0 30px rgba(247,200,115,.7); }
+  .trailer-card.studio .aside { letter-spacing: .4em; text-transform: uppercase; font-size: .45em; }
+  .trailer-card.xl { font-style: italic; font-size: clamp(2.4rem, 10vw, 4.4rem); }
+  .trailer-card.big {
+    font-style: italic; font-size: clamp(3rem, 14vw, 6rem); line-height: 1.1;
+    background: linear-gradient(110deg, #b8863a 0%, #f7c873 38%, #fff7e0 50%, #f7c873 62%, #b8863a 100%);
+    background-size: 260% 100%; background-position: 100% 0;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .trailer-card.big.in { animation: cardIn var(--dur, 3s) linear forwards, shine 2.6s ease-in-out .5s forwards; }
+  @keyframes shine { to { background-position: 0 0; } }
+  .trailer-card.credit-card { font-size: clamp(1.1rem, 4.5vw, 1.6rem); font-weight: 400; }
+  .trailer-card.dialog-card { font-style: italic; font-weight: 400; font-size: clamp(1.2rem, 5vw, 1.8rem); }
+  .trailer-card.caps-card { font-family: 'Inter', sans-serif; font-weight: 600; font-size: clamp(.85rem, 3.4vw, 1.1rem); letter-spacing: .35em; text-transform: uppercase; }
+  .trailer-skip-run { display: none; position: fixed; right: 16px; bottom: 3vh; z-index: 45; margin: 0; }
+
+  .soundtrack { display: block; font-size: .85rem; color: var(--muted); margin-bottom: 26px; }
 
   /* ---------- POSTER ---------- */
   .poster {
@@ -285,17 +347,22 @@
 
 <!-- SCENE 0: TRAILER -->
 <section class="scene active trailer" id="scene-trailer">
+  <div class="fx flare sun" aria-hidden="true"></div>
+  <div class="fx flare xmas" aria-hidden="true"></div>
+  <div class="fx vignette" aria-hidden="true"></div>
+  <div class="fx grain" aria-hidden="true"></div>
+  <div class="fx flash" id="flash" aria-hidden="true"></div>
   <div class="trailer-start" id="trailerStart">
     <div class="presents"><span data-you></span> Pictures presents</div>
     <h2>Before the feature presentation…</h2>
-    <p class="muted">a short trailer. Best with sound on. 🔊</p>
+    <p class="muted">an 80-second trailer with an original score.<br>Turn your sound on. 🔊</p>
     <button class="btn" id="trailerPlay">▶ Watch the trailer</button>
     <button class="btn ghost" id="trailerMuted">Watch without sound</button>
     <button class="skip" id="trailerSkip">skip trailer</button>
   </div>
-  <div class="trailer-card" id="trailerCard" aria-live="polite"></div>
-  <button class="skip trailer-skip-run" id="trailerSkipRun">skip trailer ⏭</button>
+  <div class="trailer-stage" id="trailerStage"><div class="trailer-card" id="trailerCard" aria-live="polite"></div></div>
 </section>
+<button class="skip trailer-skip-run" id="trailerSkipRun">skip trailer ⏭</button>
 
 <!-- SCENE 1: MOVIE POSTER -->
 <section class="scene" id="scene-poster">
@@ -322,14 +389,14 @@
   <div class="script" id="script">
     <p class="slug">FADE IN:</p>
     <p class="slug">INT. A RANDOM BELGIAN SUPERMARKET – MIDDAY</p>
-    <p>Fluorescent lights hum over the fish section. Outside, snow falls in that suspiciously perfect, big-movie-budget way. It's no English cottage in the snow, but the lighting is doing its best.</p>
+    <p>Fluorescent lights hum over the fish section. Outside, a Belgian summer: 29 degrees, zero snow, not a fairy light in sight. It's no English cottage in the snow, but the lighting is doing its best.</p>
     <p><span data-her-upper></span>, physicist and undefeated baking legend, is deep in thought at the fish counter. <span data-you-upper></span> turns the corner with a shopping basket and zero plan. They haven't seen each other since physics class.</p>
     <p class="char"><span data-you-upper></span></p>
     <p class="paren">(clears throat, nervous)</p>
     <p class="dialog">I calculated the odds of running into you here on the back of my receipt. They're tiny. Statistically, that's not a coincidence anymore. That's a sign.</p>
     <p class="char"><span data-you-upper></span> (V.O.)</p>
     <p class="paren">(deep movie-trailer voice, clearly practised)</p>
-    <p class="dialog">This Christmas... two old physics classmates... one fish counter... and the most improbable meet-cute in Belgian history.</p>
+    <p class="dialog">One summer... two old physics classmates... one fish counter... and the most improbable meet-cute in Belgian history. This Christmas... the sequel.</p>
     <p class="char"><span data-you-upper></span></p>
     <p class="paren">(normal voice, immediately)</p>
     <p class="dialog">Sorry. I panicked. Something smelled fishy... turns out it was just fate.</p>
@@ -372,8 +439,9 @@
   <div class="big-emoji">🦦</div>
   <h2>Cue the swelling orchestra!</h2>
   <div class="task-result" id="taskResult"></div>
-  <p>The snow falls a little slower. Somewhere, a woman who hasn't cried since she was fifteen finally sheds a single tear.<br><br>Every leading lady deserves her own theme song. So I had one composed for you. (OK, my browser did.)</p>
-  <button class="btn ghost" id="themeBtn" style="margin-bottom:22px">🎹 Play Celine's theme</button>
+  <p>We met in a heatwave. Now the snow falls a little slower. Somewhere, a woman who hasn't cried since she was fifteen finally sheds a single tear.<br><br>Every leading lady deserves her own theme song. So I had one composed for you, the same one from the trailer. (OK, my browser did.)</p>
+  <button class="btn ghost" id="themeBtn" style="margin-bottom:12px">🎹 Play Celine's theme</button>
+  <a class="soundtrack" href="https://open.spotify.com/search/The%20Holiday%20soundtrack" target="_blank" rel="noopener">🎧 Want the real thing? The Holiday soundtrack on Spotify</a>
   <p style="margin-top:0">Now let's write the rest of the movie together.</p>
   <button class="btn" id="toMontage">🎬 Roll the montage</button>
 </section>
@@ -642,12 +710,16 @@ function confetti() {
 let scriptTimers = [];
 function playScript() {
   show('script');
-  const lines = $$('#script p');
-  lines.forEach((p, i) => scriptTimers.push(setTimeout(() => {
-    p.classList.add('show');
-    p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, 500 + i * 1100)));
-  scriptTimers.push(setTimeout(finishScript, 500 + lines.length * 1100));
+  // Each line waits long enough to be read: longer lines get more time.
+  let t = 500;
+  $$('#script p').forEach(p => {
+    scriptTimers.push(setTimeout(() => {
+      p.classList.add('show');
+      p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, t));
+    t += Math.min(3200, Math.max(900, p.textContent.length * 34));
+  });
+  scriptTimers.push(setTimeout(finishScript, t));
 }
 function finishScript() {
   scriptTimers.forEach(clearTimeout);
@@ -868,39 +940,205 @@ function sayYes() {
 }
 $('#toMontage').addEventListener('click', () => show('montage'));
 
-/* ---------- Celine's theme: an original little waltz, synthesized in the browser ---------- */
+/* ---------- Original score: piano + strings + percussion, synthesized live in the browser ----------
+   An original composition (D major, 76 BPM). Used by the trailer and by "Celine's theme". */
 let audioCtx;
-function noteFreq(n) {
-  const steps = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
-  const midi = 12 * (+n.slice(-1) + 1) + steps[n[0]];
-  return 440 * 2 ** ((midi - 69) / 12);
-}
-function playNote(freq, when, dur, vol) {
-  const g = audioCtx.createGain();
-  g.gain.setValueAtTime(0, when);
-  g.gain.linearRampToValueAtTime(vol, when + .015);
-  g.gain.exponentialRampToValueAtTime(.0008, when + dur * 1.8);
-  g.connect(audioCtx.destination);
-  [[1, 'sine', 1], [2, 'triangle', .18], [3, 'sine', .06]].forEach(([mult, type, amp]) => {
-    const o = audioCtx.createOscillator(), og = audioCtx.createGain();
-    o.type = type; o.frequency.value = freq * mult; og.gain.value = amp;
-    o.connect(og); og.connect(g); o.start(when); o.stop(when + dur * 1.9);
-  });
-}
-$('#themeBtn').addEventListener('click', () => {
+function ensureAudio() {
   audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
   audioCtx.resume();
-  const beat = .42, t0 = audioCtx.currentTime + .05;
-  const melody = [['E5',.5],['G5',.5],['C6',1],['B5',.5],['A5',.5],['G5',1],['E5',.5],['F5',.5],['G5',.5],['A5',.5],['G5',1.5],
-                  [null,.5],['C5',.5],['E5',.5],['G5',1],['F5',.5],['E5',.5],['D5',1],['E5',.5],['G5',.5],['C6',2]];
-  const bass = [['C3',2],['G2',2],['A2',2],['G2',2],['F2',2],['G2',2],['C3',3]];
-  let t = t0;
-  for (const [n, b] of melody) { if (n) playNote(noteFreq(n), t, b * beat, .16); t += b * beat; }
-  t = t0;
-  for (const [n, b] of bass) { playNote(noteFreq(n), t, b * beat, .09); t += b * beat; }
+  return audioCtx;
+}
+function noteFreq(n) {
+  const m = n.match(/^([A-G])(#|b)?(-?\d)$/);
+  const steps = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  const midi = 12 * (+m[3] + 1) + steps[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0);
+  return 440 * 2 ** ((midi - 69) / 12);
+}
+const octave = (n, by) => n.replace(/(-?\d)$/, d => +d + by);
+
+const score = (() => {
+  const BEAT = 60 / 76, BAR = BEAT * 4;
+  const CH = {
+    D: ['D3', 'F#3', 'A3', 'D4'], Bm: ['B2', 'D3', 'F#3', 'B3'],
+    G: ['G2', 'B2', 'D3', 'G3'],  A: ['A2', 'C#3', 'E3', 'A3'],
+  };
+  const MEL = { D: ['F#5', 'E5', 'D5', 'A4'], Bm: ['D5', 'F#5', 'E5', 'D5'], G: ['B4', 'D5', 'G5', 'F#5'], A: ['E5', 'C#5', 'A4', 'C#5'] };
+  const ARP = [0, 1, 2, 3, 2, 1, 2, 3];
+  let master = null, reverb = null, timer = null, noiseBuf = null;
+
+  function setup() {
+    const ac = audioCtx;
+    const comp = ac.createDynamicsCompressor();
+    comp.threshold.value = -14; comp.ratio.value = 4; comp.connect(ac.destination);
+    master = ac.createGain(); master.gain.value = .85; master.connect(comp);
+    const len = ac.sampleRate * 2.8, ir = ac.createBuffer(2, len, ac.sampleRate);
+    for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 3; }
+    reverb = ac.createConvolver(); reverb.buffer = ir;
+    const wet = ac.createGain(); wet.gain.value = .32; reverb.connect(wet); wet.connect(master);
+  }
+  function bus(node) { node.connect(master); node.connect(reverb); }
+  function osc(type, f, when, end, dest, detune = 0) {
+    const o = audioCtx.createOscillator();
+    o.type = type; o.frequency.value = f; o.detune.value = detune;
+    o.connect(dest); o.start(when); o.stop(end);
+    return o;
+  }
+  function pad(notes, when, dur, vol) {           // warm string section
+    const f = audioCtx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1100;
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0, when);
+    g.gain.linearRampToValueAtTime(vol, when + Math.min(1.2, dur * .4));
+    g.gain.setValueAtTime(vol, when + dur - .2);
+    g.gain.linearRampToValueAtTime(0, when + dur + 1.2);
+    f.connect(g); bus(g);
+    notes.forEach(n => [-7, 7].forEach(det => osc('sawtooth', noteFreq(n), when, when + dur + 1.3, f, det)));
+  }
+  function piano(n, when, dur, vol) {             // soft felt piano
+    const g = audioCtx.createGain(), tail = Math.max(1.2, dur * 2.5);
+    g.gain.setValueAtTime(0, when);
+    g.gain.linearRampToValueAtTime(vol, when + .008);
+    g.gain.exponentialRampToValueAtTime(.0004, when + tail);
+    bus(g);
+    [[1, 'triangle', .55], [1, 'sine', .7], [2, 'sine', .12], [3, 'sine', .04]].forEach(([mult, type, amp]) => {
+      const og = audioCtx.createGain(); og.gain.value = amp; og.connect(g);
+      osc(type, noteFreq(n) * mult, when, when + tail + .1, og);
+    });
+  }
+  function kick(when, vol = .6) {
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(vol, when); g.gain.exponentialRampToValueAtTime(.001, when + .6);
+    bus(g);
+    const o = osc('sine', 110, when, when + .65, g);
+    o.frequency.setValueAtTime(110, when); o.frequency.exponentialRampToValueAtTime(38, when + .25);
+  }
+  function noise() {
+    if (!noiseBuf) {
+      const len = audioCtx.sampleRate * 2;
+      noiseBuf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+      const d = noiseBuf.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    }
+    const s = audioCtx.createBufferSource(); s.buffer = noiseBuf; return s;
+  }
+  function tick(when, vol = .04) {
+    const s = noise(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+    f.type = 'highpass'; f.frequency.value = 7000;
+    g.gain.setValueAtTime(vol, when); g.gain.exponentialRampToValueAtTime(.001, when + .06);
+    s.connect(f); f.connect(g); g.connect(master); s.start(when); s.stop(when + .08);
+  }
+  function riser(when, dur) {
+    const s = noise(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+    s.loop = true; f.type = 'bandpass'; f.Q.value = 3;
+    f.frequency.setValueAtTime(300, when); f.frequency.exponentialRampToValueAtTime(6000, when + dur);
+    g.gain.setValueAtTime(.0001, when); g.gain.exponentialRampToValueAtTime(.2, when + dur); g.gain.linearRampToValueAtTime(0, when + dur + .05);
+    s.connect(f); f.connect(g); bus(g); s.start(when); s.stop(when + dur + .1);
+  }
+  function hit(when) {                            // cinematic brass "BWAAAM" + boom
+    const f = audioCtx.createBiquadFilter(); f.type = 'lowpass';
+    f.frequency.setValueAtTime(300, when); f.frequency.linearRampToValueAtTime(1600, when + .1); f.frequency.exponentialRampToValueAtTime(200, when + 3);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0, when); g.gain.linearRampToValueAtTime(.14, when + .05); g.gain.exponentialRampToValueAtTime(.001, when + 3.5);
+    f.connect(g); bus(g);
+    ['D2', 'A2', 'D3', 'F#3', 'A3'].forEach(n => [-8, 0, 8].forEach(det => osc('sawtooth', noteFreq(n), when, when + 3.6, f, det)));
+    kick(when, .9);
+    const sg = audioCtx.createGain();
+    sg.gain.setValueAtTime(.5, when); sg.gain.exponentialRampToValueAtTime(.001, when + 2); sg.connect(master);
+    const sub = osc('sine', 55, when, when + 2.1, sg);
+    sub.frequency.exponentialRampToValueAtTime(30, when + 1.5);
+  }
+  function bars(from, to, prog, each) {
+    for (let t = from, i = 0; t < to - .1; t += BAR, i++) each(t, prog[i % prog.length], i);
+  }
+
+  // The trailer cue, in seconds from the start. Hits are added from the trailer cards.
+  function trailerCue(hitTimes) {
+    const ev = [], at = (t, fn) => ev.push({ t, fn });
+    const P1 = ['D', 'Bm', 'G', 'A'], P2 = ['D', 'A', 'Bm', 'G'];
+    // Act 1 (memories): soft strings + slow piano
+    bars(4.2, 25.4, P1, (t, c) => {
+      at(t, w => pad(CH[c], w, BAR, .03));
+      CH[c].forEach((n, k) => at(t + k * BEAT, w => piano(octave(n, 1), w, BEAT, .07)));
+    });
+    // Act 2 (summer, the fish section): flowing arpeggios + melody
+    bars(25.4, 40.4, P1, (t, c) => {
+      at(t, w => pad(CH[c], w, BAR, .04));
+      ARP.forEach((k, j) => at(t + j * BEAT / 2, w => piano(octave(CH[c][k], 1), w, BEAT / 2, .05)));
+      MEL[c].forEach((n, j) => at(t + j * BEAT, w => piano(n, w, BEAT, .08)));
+    });
+    // Act 3 (the question): heartbeat drums build up
+    bars(40.4, 54.8, P1, (t, c, i) => {
+      at(t, w => pad(CH[c], w, BAR, .045 + i * .006));
+      ARP.forEach((k, j) => at(t + j * BEAT / 2, w => piano(octave(CH[c][k], 1), w, BEAT / 2, .05)));
+      for (let b = 0; b < 4; b++) at(t + b * BEAT, w => kick(w, .3 + i * .06));
+      for (let e = 0; e < 8; e++) at(t + e * BEAT / 2, w => tick(w, .025 + i * .01));
+    });
+    at(50.8, w => riser(w, 4));
+    // One second of silence before "This Christmas…"
+    at(54.75, w => master.gain.setTargetAtTime(.0001, w, .03));
+    at(55.95, w => { master.gain.cancelScheduledValues(w); master.gain.setValueAtTime(.85, w); });
+    // Finale: full strings, melody doubled an octave up, big drums
+    bars(56, 74.4, P2, (t, c) => {
+      at(t, w => pad(CH[c], w, BAR, .06));
+      at(t, w => pad(CH[c].map(n => octave(n, 1)), w, BAR, .025));
+      ARP.forEach((k, j) => at(t + j * BEAT / 2, w => piano(octave(CH[c][k], 1), w, BEAT / 2, .045)));
+      MEL[c].forEach((n, j) => { at(t + j * BEAT, w => piano(n, w, BEAT, .09)); at(t + j * BEAT, w => piano(octave(n, 1), w, BEAT, .03)); });
+      at(t, w => kick(w, .5)); at(t + 2 * BEAT, w => kick(w, .35));
+    });
+    // Outro: a quiet piano button and the final chord
+    at(74.6, w => pad(CH.G, w, 4, .035));
+    ['A4', 'D5', 'F#5', 'E5'].forEach((n, j) => at(74.6 + j * BEAT * 1.5, w => piano(n, w, BEAT * 1.5, .08)));
+    at(78.6, w => pad(CH.D, w, 3.8, .045));
+    ['D4', 'F#4', 'A4', 'D5'].forEach((n, j) => at(78.6 + j * .12, w => piano(n, w, 3, .06)));
+    hitTimes.forEach(t => at(t, w => hit(w)));
+    return ev.sort((a, b) => a.t - b.t);
+  }
+  // "Celine's theme": the finale of the trailer, on its own (about 15 seconds)
+  function themeCue() {
+    const ev = [], at = (t, fn) => ev.push({ t, fn });
+    bars(0, 4 * BAR, ['D', 'A', 'Bm', 'G'], (t, c) => {
+      at(t, w => pad(CH[c], w, BAR, .045));
+      ARP.forEach((k, j) => at(t + j * BEAT / 2, w => piano(octave(CH[c][k], 1), w, BEAT / 2, .04)));
+      MEL[c].forEach((n, j) => at(t + j * BEAT, w => piano(n, w, BEAT, .09)));
+    });
+    at(4 * BAR, w => pad(CH.D, w, 3, .045));
+    ['D4', 'F#4', 'A4', 'D5'].forEach((n, j) => at(4 * BAR + j * .12, w => piano(n, w, 3, .06)));
+    return ev.sort((a, b) => a.t - b.t);
+  }
+  function play(events) {
+    ensureAudio();
+    stop(true);
+    setup();
+    const t0 = audioCtx.currentTime + .08;
+    let i = 0;
+    const pump = () => {                          // schedule ~1.2 s ahead, so long cues stay light on phones
+      const now = audioCtx.currentTime - t0;
+      while (i < events.length && events[i].t < now + 1.2) { events[i].fn(t0 + events[i].t); i++; }
+      if (i >= events.length) clearInterval(timer);
+    };
+    pump();
+    timer = setInterval(pump, 200);
+  }
+  function stop(instant) {
+    clearInterval(timer);
+    if (master) {
+      const now = audioCtx.currentTime;
+      master.gain.cancelScheduledValues(now);
+      master.gain.setTargetAtTime(.0001, now, instant ? .02 : .4);
+      master = null; reverb = null;
+    }
+  }
+  return {
+    trailer: hitTimes => play(trailerCue(hitTimes)),
+    theme: () => play(themeCue()),
+    themeLength: (4 * BAR + 3) * 1000,
+    stop,
+  };
+})();
+
+$('#themeBtn').addEventListener('click', () => {
+  score.theme();
   const btn = $('#themeBtn');
   btn.disabled = true; btn.textContent = '🎶 Now playing: Celine\'s theme';
-  setTimeout(() => { btn.disabled = false; btn.textContent = '🎹 Play it again'; }, 15 * beat * 1000 + 800);
+  setTimeout(() => { btn.disabled = false; btn.textContent = '🎹 Play it again'; }, score.themeLength);
   achievement('🎼', 'Every leading lady gets a theme song');
 });
 
@@ -931,7 +1169,9 @@ buildChips('dress', CONFIG.dressCodes);
 buildChips('pay', CONFIG.whoPays);
 
 const dateInput = $('#dateInput');
-dateInput.min = new Date().toISOString().slice(0, 10);
+const today = new Date();
+today.setMinutes(today.getMinutes() - today.getTimezoneOffset()); // local date, not UTC
+dateInput.min = today.toISOString().slice(0, 10);
 [dateInput, $('#dateOther')].forEach(el => el.addEventListener('input', () => $('#fs-when').classList.remove('missing')));
 
 function getChoice(group) {
@@ -1049,91 +1289,86 @@ $('#copyBtn').addEventListener('click', async () => {
 });
 $('#editBtn').addEventListener('click', () => show('montage'));
 
-/* ---------- Trailer: title cards + brass hits ----------
+/* ---------- Trailer: a timed sequence of title cards, synced to the score ----------
    ✏️ Edit the trailer here. One line = one card.
-   text: what's shown (<br> = new line, <i>…</i> = italic, <b>…</b> = gold)
-   hit:  true plays the cinematic "BWAAAM"
-   hold: how long the card stays (ms, default 2300)
-   cls:  style: 'big' (gold title), 'caps' (small capitals), 'credit-card' (smaller text) */
+   at:   when the card appears (seconds from the start). The music is timed to these, so keep the order.
+   dur:  how long it stays on screen (seconds)
+   text: what's shown (<br> = new line, <i>…</i> = italic, <b>…</b> = gold, <span class="aside">…</span> = small line)
+   hit:  true = cinematic "BWAAAM" + white flash
+   mood: 'summer' (warm sun flare), 'christmas' (snow + fairy lights), 'none' (back to black)
+   cls:  style: 'approval', 'studio', 'xl', 'big' (gold title), 'credit-card', 'dialog-card', 'caps-card' */
 const HER = CONFIG.herName;
 const TRAILER = [
-  { text: 'Coming soon…' },
-  { text: 'Years ago, they shared a physics classroom.' },
-  { text: 'They survived the same exams…' },
-  { text: '…the same lab reports…' },
-  { text: '…and the same professor’s terrible jokes.<span class="aside">(Some people never recovered. Keep watching.)</span>', hold: 3000 },
-  { text: 'Then life happened.' },
-  { text: 'Until one ordinary midday…' },
-  { text: '…in a random Belgian supermarket…' },
-  { text: '…they ran into each other in the fish section.<span class="aside">Plenty of fish in the sea. Only one that mattered.</span>', hit: true, hold: 3400 },
-  { text: 'She bakes like a legend.' },
-  { text: 'He tells dad jokes without even being a dad.<span class="aside">(He already has three fish puns ready. Sorry in advance.)</span>', hold: 3400 },
-  { text: 'One question.', hit: true },
-  { text: 'Two buttons.' },
-  { text: 'And one of them…<br>runs away.', hold: 2600 },
-  { text: 'From the studio that brought you<br><i>“Rehearsing in the Mirror”</i><br>and <i>“Waiting for the Right Moment”</i>', cls: 'credit-card', hold: 3400 },
-  { text: `Starring <b>${HER}</b><br>as the leading lady`, cls: 'credit-card', hold: 2800 },
-  { text: `Co-starring <b>${CONFIG.yourName}</b><br>as the guy with the dad jokes`, cls: 'credit-card', hold: 2800 },
-  { text: 'The Holi-date', cls: 'big', hit: true, hold: 3000 },
-  { text: 'Coming to a cozy place near you', cls: 'caps' },
+  { at: 0,    dur: 3.6, cls: 'approval', text: 'The following preview has been approved for<br><b>one (1) very specific viewer</b>' },
+  { at: 4.2,  dur: 3.4, cls: 'studio', text: `${CONFIG.yourName.toUpperCase()} PICTURES<span class="aside">presents</span>` },
+  { at: 8.0,  dur: 2.8, text: 'Coming soon…' },
+  { at: 11.0, dur: 3.2, text: 'Years ago, they shared a physics classroom.' },
+  { at: 14.4, dur: 3.2, text: 'The same exams. The same lab reports…' },
+  { at: 17.8, dur: 3.8, text: '…and the same professor’s terrible jokes.<span class="aside">(Some people never recovered. Keep watching.)</span>' },
+  { at: 21.8, dur: 3.2, text: 'Then life happened.' },
+  { at: 25.4, dur: 3.2, text: 'Until one summer midday…', mood: 'summer' },
+  { at: 28.8, dur: 3.4, text: '29 degrees. Zero snow.<span class="aside">Not exactly a Christmas movie set.</span>' },
+  { at: 32.4, dur: 3.2, text: '…in a random Belgian supermarket…' },
+  { at: 35.8, dur: 4.2, hit: true, text: '…they ran into each other in the fish section.<span class="aside">Plenty of fish in the sea. Only one that mattered.</span>' },
+  { at: 40.4, dur: 2.8, text: 'She bakes like a legend.', mood: 'none' },
+  { at: 43.4, dur: 3.8, text: 'He tells dad jokes without even being a dad.<span class="aside">(He already has three fish puns ready. Sorry in advance.)</span>' },
+  { at: 47.4, dur: 2.4, hit: true, text: 'One question.' },
+  { at: 50.0, dur: 2.0, text: 'Two buttons.' },
+  { at: 52.2, dur: 2.6, text: 'And one of them…<br>runs away.' },
+  /* 54.8 – 56.0: one second of black and silence */
+  { at: 56.0, dur: 3.4, hit: true, cls: 'xl', text: 'This Christmas…', mood: 'christmas' },
+  { at: 59.6, dur: 2.8, cls: 'credit-card', text: `Starring <b>${HER}</b><br>as the leading lady` },
+  { at: 62.6, dur: 2.8, cls: 'credit-card', text: `Co-starring <b>${CONFIG.yourName}</b><br>as the guy with the dad jokes` },
+  { at: 65.6, dur: 3.6, cls: 'credit-card', text: 'From the studio that brought you<br><i>“Rehearsing in the Mirror”</i><br>and <i>“Waiting for the Right Moment”</i>' },
+  { at: 69.6, dur: 4.6, hit: true, cls: 'big', text: 'The Holi-date' },
+  { at: 74.6, dur: 3.6, cls: 'dialog-card', text: '“Wait… was that a fish pun?”<br>“Only a small-fry one.”' },
+  { at: 78.6, dur: 3.4, cls: 'caps-card', text: 'Coming to a cozy place near you' },
 ];
+const TRAILER_END = 82.4;
 
-let soundOn = true, trailerAbort = false;
+let trailerRun = 0, trailerDone = false;
 const wait = ms => new Promise(r => setTimeout(r, ms));
-function brassHit() {
-  if (!soundOn) return;
-  try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    audioCtx.resume();
-    const t = audioCtx.currentTime;
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(250, t);
-    filter.frequency.linearRampToValueAtTime(1100, t + .12);
-    filter.frequency.exponentialRampToValueAtTime(180, t + 2.6);
-    const g = audioCtx.createGain();
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(.2, t + .06);
-    g.gain.exponentialRampToValueAtTime(.001, t + 3);
-    filter.connect(g); g.connect(audioCtx.destination);
-    ['C2', 'G2', 'C3', 'G3'].forEach(n => [-6, 6].forEach(detune => {
-      const o = audioCtx.createOscillator();
-      o.type = 'sawtooth'; o.frequency.value = noteFreq(n); o.detune.value = detune;
-      o.connect(filter); o.start(t); o.stop(t + 3.1);
-    }));
-  } catch { /* no audio: the trailer still works silently */ }
+function setMood(mood) {
+  const sec = $('#scene-trailer');
+  sec.classList.remove('mood-summer', 'mood-christmas');
+  if (mood === 'summer' || mood === 'christmas') sec.classList.add('mood-' + mood);
 }
-
+function showCard(c) {
+  const card = $('#trailerCard');
+  card.className = 'trailer-card ' + (c.cls || '');
+  card.innerHTML = c.text;
+  card.style.setProperty('--dur', c.dur + 's');
+  void card.offsetWidth; // restart the animation
+  card.classList.add('in');
+  if (c.hit) { const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }
+}
 async function playTrailer(withSound) {
-  soundOn = withSound;
-  trailerAbort = false;
-  if (soundOn) { // unlock audio on this tap (needed on iPhone)
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    audioCtx.resume();
+  const run = ++trailerRun;
+  trailerDone = false;
+  if (withSound) {
+    try { score.trailer(TRAILER.filter(c => c.hit).map(c => c.at)); } catch { /* no audio: plays silently */ }
   }
   $('#trailerStart').style.display = 'none';
+  $('#trailerStage').classList.add('on');
   $('#trailerSkipRun').style.display = 'block';
-  const card = $('#trailerCard');
-  card.style.display = 'block';
-  await wait(600);
+  const t0 = performance.now();
   for (const c of TRAILER) {
-    if (trailerAbort) return;
-    card.className = 'trailer-card ' + (c.cls || '');
-    card.innerHTML = c.text;
-    void card.offsetWidth; // restart the fade/zoom
-    card.classList.add('show');
-    if (c.hit) brassHit();
-    await wait(c.hold || 2300);
-    await wait(300);
-    if (trailerAbort) return;
-    card.classList.remove('show');
-    await wait(650);
+    const delay = c.at * 1000 - (performance.now() - t0);
+    if (delay > 0) await wait(delay);
+    if (run !== trailerRun || trailerDone) return;
+    if (c.mood) setMood(c.mood);
+    showCard(c);
   }
-  endTrailer();
+  await wait(TRAILER_END * 1000 - (performance.now() - t0));
+  if (run === trailerRun && !trailerDone) endTrailer();
 }
 function endTrailer() {
-  if (trailerAbort) return;
-  trailerAbort = true;
+  if (trailerDone) return;
+  trailerDone = true;
+  trailerRun++;
+  score.stop();
+  setMood('none');
+  $('#trailerStage').classList.remove('on');
   $('#trailerSkipRun').style.display = 'none';
   show('poster');
 }
