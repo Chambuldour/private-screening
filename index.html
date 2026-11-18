@@ -99,8 +99,23 @@
   .btn.wa { background: #25d366; color: #062b14; box-shadow: 0 6px 24px rgba(37, 211, 102, .35); }
 
   /* ---------- TRAILER ---------- */
-  .trailer { background: #000; z-index: 2; transition: background-color 2s ease; }
-  .trailer.mood-christmas { background: rgba(0, 0, 0, .5); } /* lets the real snow + fireplace glow through */
+  .trailer {
+    z-index: 2; transition: background-color 3s ease;
+    background-color: rgba(28, 12, 6, .55); /* warm and see-through: the snow and fireplace glow shine through */
+    background-image: radial-gradient(ellipse at 50% 110%, rgba(255,140,60,.22), transparent 60%),
+                      radial-gradient(ellipse at 50% -10%, rgba(255,214,160,.10), transparent 55%);
+  }
+  .trailer.mood-summer { background-color: rgba(60, 28, 10, .55); }   /* a soft golden summer warmth */
+  .trailer.mood-christmas { background-color: rgba(28, 12, 6, .35); } /* more snow, more glow */
+  /* cozy windowsill along the bottom of the screen */
+  .cozy-sill { display: none; position: fixed; left: 0; right: 0; bottom: 11vh; z-index: 4; pointer-events: none;
+    justify-content: center; gap: clamp(14px, 5vw, 46px); font-size: clamp(1.4rem, 5vw, 2.1rem);
+    padding-bottom: 8px; opacity: .9; filter: drop-shadow(0 0 10px rgba(255,170,90,.35)); }
+  body.in-trailer .cozy-sill { display: flex; }
+  .cozy-sill span { animation: bob 6s ease-in-out infinite; }
+  .cozy-sill span:nth-child(2) { animation-delay: -1.5s; } .cozy-sill span:nth-child(3) { animation-delay: -3s; }
+  .cozy-sill span:nth-child(4) { animation-delay: -4.5s; } .cozy-sill span:nth-child(5) { animation-delay: -2.2s; }
+  @keyframes bob { 50% { transform: translateY(-4px); } }
   .bar { transition: height 1.2s ease; }
   body.in-trailer .bar { height: 11vh; } /* widescreen 2.39:1 letterbox during the trailer */
   .trailer-start { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 14px; }
@@ -111,36 +126,7 @@
 
   /* film look */
   .fx { position: fixed; pointer-events: none; }
-  .fx.vignette { inset: 0; z-index: 30; background: radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,.8) 100%); }
-  .fx.grain {
-    inset: -20%; z-index: 31; opacity: .1;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    animation: grain .4s steps(4) infinite;
-  }
-  @keyframes grain { 0% { transform: translate(0, 0); } 25% { transform: translate(-4%, 3%); } 50% { transform: translate(3%, -4%); } 75% { transform: translate(-2%, -2%); } 100% { transform: translate(0, 0); } }
-  .fx.flare { inset: -10%; z-index: 1; opacity: 0; transition: opacity 3s ease; animation: drift 12s ease-in-out infinite alternate; }
-  .fx.flare.sun {
-    background:
-      radial-gradient(circle at 80% 20%, rgba(255,220,150,.6) 0%, rgba(255,170,80,.25) 14%, transparent 40%),
-      radial-gradient(circle at 62% 38%, rgba(255,200,120,.18) 0%, transparent 9%),
-      radial-gradient(circle at 44% 56%, rgba(255,190,110,.12) 0%, transparent 6%),
-      linear-gradient(180deg, rgba(255,150,60,.18), transparent 60%);
-  }
-  .fx.flare.xmas {
-    filter: blur(4px);
-    background:
-      radial-gradient(circle at 18% 28%, rgba(217,83,74,.45), transparent 9%),
-      radial-gradient(circle at 82% 62%, rgba(63,143,98,.45), transparent 10%),
-      radial-gradient(circle at 58% 14%, rgba(247,200,115,.4), transparent 7%),
-      radial-gradient(circle at 30% 78%, rgba(247,200,115,.3), transparent 8%),
-      radial-gradient(circle at 74% 30%, rgba(217,83,74,.3), transparent 6%);
-  }
-  .trailer.mood-summer .fx.flare.sun, .trailer.mood-christmas .fx.flare.xmas { opacity: 1; }
-  @keyframes drift { to { transform: translate(-3%, 2%) scale(1.08); } }
-  .fx.flash { inset: 0; z-index: 32; background: #fff; opacity: 0; }
-  .fx.flash.go { animation: flash .6s ease-out; }
-  @keyframes flash { 0% { opacity: .8; } 100% { opacity: 0; } }
-
+  .fx.vignette { inset: 0; z-index: 30; background: radial-gradient(ellipse at center, transparent 50%, rgba(20,8,4,.7) 100%); }
   /* title cards */
   .trailer-stage { display: none; position: fixed; inset: 0; z-index: 3; align-items: center; justify-content: center; padding: 12vh 24px; pointer-events: none; }
   .trailer-stage.on { display: flex; }
@@ -350,14 +336,11 @@
 <canvas id="confetti"></canvas>
 <div id="peeker" aria-hidden="true"><div class="bubble"></div><span class="otter">🦦</span></div>
 <div class="bar top"></div><div class="bar bottom"></div>
+<div class="cozy-sill" aria-hidden="true"><span>🕯️</span><span>☕</span><span>🦦</span><span>🧶</span><span>🍪</span></div>
 
 <!-- SCENE 0: TRAILER -->
 <section class="scene active trailer" id="scene-trailer">
-  <div class="fx flare sun" aria-hidden="true"></div>
-  <div class="fx flare xmas" aria-hidden="true"></div>
   <div class="fx vignette" aria-hidden="true"></div>
-  <div class="fx grain" aria-hidden="true"></div>
-  <div class="fx flash" id="flash" aria-hidden="true"></div>
   <div class="trailer-start" id="trailerStart">
     <div class="presents"><span data-studio></span> presents</div>
     <h2>Before the feature presentation…</h2>
@@ -554,7 +537,7 @@ const CONFIG = {
   //  to open your chat directly.)
   whatsappNumber: "",
 
-  times: ["☀️ Afternoon", "🌆 Evening", "🌌 When the stars come out"],
+  times: ["🌅 Morning", "☀️ Afternoon", "🌆 Evening", "🌌 When the stars come out"],
   activities: [
     "🌲 Forest walk (with hot chocolate in a thermos)",
     "🔭 Stargazing",
@@ -570,7 +553,7 @@ const CONFIG = {
     "🧶 Knitting + hot chocolate night (you teach me)",
     "✂️ Crafting something together",
     "🎬 Cinema",
-    "⛳ Mini golf (I'll go easy on you. Maybe.)",
+    "⛳ Mini golf",
     "🎳 Bowling",
     "🕹️ Arcade",
     "⛸️ Ice skating",
@@ -594,7 +577,7 @@ const CONFIG = {
   whoPays: [
     "💸 Maarten pays",
     "🧾 I'll graciously let Maarten pay",
-    "🍐 We split it 50/50. After all, we make a great pear",
+    "🍐 We split it 50/50. After all, we make a great pear (so… Maarten pays)",
     "🦦 The otters pay (they don't, Maarten does)",
   ],
 };
@@ -1134,8 +1117,8 @@ $('#editBtn').addEventListener('click', () => show('montage'));
    at:   when the card appears (seconds from the start). Keep them in order.
    dur:  how long it stays on screen (seconds)
    text: what's shown (<br> = new line, <i>…</i> = italic, <b>…</b> = gold, <span class="aside">…</span> = small line)
-   hit:  true = white flash
-   mood: 'summer' (warm sun flare), 'christmas' (snow + fairy lights), 'none' (back to black)
+   hit:  true = a big moment (marks the beats of the music)
+   mood: 'summer' (golden warmth), 'christmas' (more snow + fireplace glow), 'none' (back to the cozy default)
    cls:  style: 'approval', 'studio', 'xl', 'big' (gold title), 'credit-card', 'dialog-card', 'caps-card' */
 const HER = CONFIG.herName;
 const TRAILER = [
@@ -1146,7 +1129,7 @@ const TRAILER = [
   { at: 14.6, dur: 3.8, text: 'Same exams. Same lab reports.<br>One hot-air balloon practical.<span class="aside">(Something was already floating. They just didn’t know it yet.)</span>' },
   { at: 18.8, dur: 3.2, text: 'Then life happened.' },
   { at: 22.4, dur: 3.2, text: 'Until one summer midday…', mood: 'summer' },
-  { at: 25.8, dur: 3.2, text: '…in a random Belgian supermarket.<span class="aside">(29 degrees.)</span>' },
+  { at: 25.8, dur: 3.2, text: '…in a random Belgian supermarket.' },
   { at: 29.4, dur: 3.2, text: 'In the fish section, she was about to walk right past him…' },
   { at: 32.8, dur: 4.2, hit: true, text: '…until he said “Hi.”<span class="aside">(Adele would be proud.)</span>' },
   { at: 37.4, dur: 3.2, text: 'Five minutes of catching up.<span class="aside">Her sister and his friend had absolutely no idea what was happening.</span>', mood: 'none' },
@@ -1179,9 +1162,13 @@ window.onSpotifyIframeApiReady = api => {
   });
 };
 async function startTrailerWithMusic() {
+  const btn = $('#trailerPlay');
   if (maestro && !maestroPlaying) {
-    try { maestro.play(); } catch { /* plays without music */ }
-    for (let i = 0; i < 20 && !maestroPlaying; i++) await wait(100);
+    try { maestro.seek(0); maestro.play(); } catch { /* plays without music */ }
+    btn.disabled = true; btn.textContent = '🎵 Cueing the music…';
+    // the first card waits for the first note, so music and trailer start together
+    for (let i = 0; i < 60 && !maestroPlaying; i++) await wait(100);
+    btn.disabled = false; btn.textContent = '▶ Watch the trailer';
   }
   playTrailer();
 }
@@ -1197,7 +1184,6 @@ function showCard(c) {
   card.style.setProperty('--dur', c.dur + 's');
   void card.offsetWidth; // restart the animation
   card.classList.add('in');
-  if (c.hit) { const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }
 }
 async function playTrailer() {
   const run = ++trailerRun;
