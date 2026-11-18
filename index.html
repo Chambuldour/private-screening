@@ -112,10 +112,11 @@
     justify-content: center; gap: clamp(14px, 5vw, 46px); font-size: clamp(1.4rem, 5vw, 2.1rem);
     padding-bottom: 8px; opacity: .9; filter: drop-shadow(0 0 10px rgba(255,170,90,.35)); }
   body.in-trailer .cozy-sill { display: flex; }
-  .cozy-sill span { animation: bob 6s ease-in-out infinite; }
+  .cozy-sill span { animation: sillBob 6s ease-in-out infinite; }
+  @media (max-height: 900px) { body.in-trailer:not(.trailer-playing) .cozy-sill { display: none; } } /* keep the start screen uncluttered */
   .cozy-sill span:nth-child(2) { animation-delay: -1.5s; } .cozy-sill span:nth-child(3) { animation-delay: -3s; }
   .cozy-sill span:nth-child(4) { animation-delay: -4.5s; } .cozy-sill span:nth-child(5) { animation-delay: -2.2s; }
-  @keyframes bob { 50% { transform: translateY(-4px); } }
+  @keyframes sillBob { 50% { transform: translateY(-4px); } }
   .bar { transition: height 1.2s ease; }
   body.in-trailer .bar { height: 11vh; } /* widescreen 2.39:1 letterbox during the trailer */
   .trailer-start { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 14px; }
@@ -198,8 +199,11 @@
   .starring { font-size: .8rem; letter-spacing: .25em; text-transform: uppercase; color: var(--muted); }
   .star-name { font-family: 'Playfair Display', serif; font-size: 1.7rem; margin: 4px 0 18px; }
   .tagline { font-style: italic; margin: 0 0 20px; line-height: 1.5; }
-  .reviews { font-size: .8rem; color: var(--muted); margin-bottom: 22px; line-height: 1.6; }
-  .reviews b { color: var(--gold); letter-spacing: .1em; }
+  .reviews { display: grid; gap: 14px; margin: 4px auto 24px; max-width: 330px; }
+  .review { padding-top: 14px; border-top: 1px solid rgba(245,199,107,.18); }
+  .review .stars { display: block; color: var(--gold); letter-spacing: .25em; font-size: .7rem; margin-bottom: 4px; }
+  .review q { display: block; quotes: none; font-family: 'Playfair Display', serif; font-style: italic; font-size: 1rem; line-height: 1.35; }
+  .review cite { display: block; margin-top: 4px; font-style: normal; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
   .rating { display: inline-block; border: 1px solid var(--muted); padding: 4px 8px; font-size: .68rem; letter-spacing: .08em; margin-top: 20px; color: var(--muted); }
 
   /* ---------- SCREENPLAY ---------- */
@@ -239,8 +243,19 @@
     width: min(100%, 520px); text-align: left;
     background: #fff8ec; color: #3a2418;
     font-family: 'Caveat', cursive; font-weight: 500; font-size: 1.55rem; line-height: 1.35;
-    padding: 28px 28px 24px; border-radius: 6px; transform: rotate(-.8deg);
-    box-shadow: 0 30px 80px rgba(0,0,0,.5);
+    padding: 34px 28px 30px; border-radius: 6px; transform: rotate(-.8deg); position: relative;
+    background-image: radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(170,110,60,.14) 100%);
+    box-shadow: 0 30px 80px rgba(0,0,0,.5), inset 0 0 0 1px rgba(120,80,50,.12);
+  }
+  .letter::before { /* a strip of washi tape */
+    content: ''; position: absolute; top: -12px; left: 50%; width: 120px; height: 26px; transform: translateX(-50%) rotate(-3deg);
+    background: repeating-linear-gradient(45deg, rgba(245,199,107,.75) 0 8px, rgba(217,83,74,.55) 8px 16px); opacity: .85; border-radius: 2px;
+  }
+  .letter::after { /* wax seal */
+    content: 'M'; position: absolute; right: 22px; bottom: -20px; width: 52px; height: 52px; border-radius: 50%;
+    display: grid; place-items: center; font: 700 1.3rem 'Playfair Display', serif; color: #f5c76b;
+    background: radial-gradient(circle at 35% 30%, #c4473d, #7d1f1a 70%);
+    box-shadow: 0 4px 10px rgba(0,0,0,.35), inset 0 0 0 4px rgba(0,0,0,.12); transform: rotate(-12deg);
   }
   .letter p { margin: 0 0 12px; opacity: 0; transform: translateY(6px); transition: opacity 1s, transform 1s; }
   .letter p.show { opacity: 1; transform: none; }
@@ -253,9 +268,10 @@
   .question .name { color: var(--gold); }
   .question .sub { margin: 18px 0 34px; }
   .choices { display: flex; gap: 22px; align-items: center; justify-content: center; flex-wrap: wrap; min-height: 120px; }
-  #yesBtn { font-size: 1.25rem; padding: 16px 40px; background: var(--green); color: #fff; box-shadow: 0 6px 30px rgba(63,174,130,.45); }
-  #noBtn { background: var(--red); color: #fff; box-shadow: none; z-index: 30; white-space: nowrap; transition: left .35s ease, top .35s ease, transform .25s; }
-  #noBtn.converted { background: var(--green); }
+  #yesBtn { font-size: 1.25rem; padding: 16px 42px; animation: yesGlow 2.4s ease-in-out infinite; }
+  @keyframes yesGlow { 50% { box-shadow: 0 6px 34px rgba(245,199,107,.6), 0 0 0 6px rgba(245,199,107,.12); } }
+  #noBtn { background: transparent; color: var(--cream); border: 1px solid rgba(255,255,255,.3); box-shadow: none; z-index: 30; white-space: nowrap; transition: left .35s ease, top .35s ease, transform .25s; }
+  #noBtn.converted { background: var(--gold); color: #241800; border-color: var(--gold); }
   .spoiler { margin-top: 40px; font-size: .78rem; }
   .task-line { display: inline-block; margin-top: 10px; font-family: 'Courier Prime', monospace; color: var(--gold); }
   #stopwatch { font-variant-numeric: tabular-nums; }
@@ -313,8 +329,16 @@
 
   /* ---------- CREDITS ---------- */
   .credits { width: min(100%, 520px); }
+  .ticket {
+    position: relative; padding: 30px 22px 22px; border: 2px solid var(--gold); border-radius: 10px;
+    background: linear-gradient(180deg, rgba(217,83,74,.18), rgba(34,12,14,.75) 40%, rgba(63,143,98,.14));
+    box-shadow: 0 0 0 6px rgba(245,199,107,.08), 0 30px 80px rgba(0,0,0,.45);
+  }
+  .ticket .admit { font-size: .68rem; letter-spacing: .35em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .ticket .tear { border-top: 2px dashed rgba(245,199,107,.35); margin: 4px -22px 16px; }
   .credits h2 { font-size: clamp(2rem, 8vw, 2.8rem); color: var(--gold); margin-bottom: 6px; }
-  .credit-list { margin: 26px 0; font-family: 'Courier Prime', monospace; }
+  .credit-list { margin: 22px 0 10px; font-family: 'Courier Prime', monospace; }
+  .credit-actions { margin-top: 26px !important; }
   .credit { opacity: 0; transform: translateY(10px); transition: opacity .7s, transform .7s; margin-bottom: 18px; }
   .credit.show { opacity: 1; transform: none; }
   .credit .role { font-size: .74rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
@@ -383,9 +407,9 @@
     <div class="starring" style="animation-delay:2.1s;margin-top:-12px;margin-bottom:18px">as the leading lady</div>
     <p class="tagline" style="animation-delay:2.4s">Years apart. One summer “hi”.<br>One random Belgian supermarket<br>and a probability too small to ignore.</p>
     <div class="reviews" style="animation-delay:2.9s">
-      <b>★★★★★</b> “Statistically improbable. Emotionally inevitable.” — <i>A former physics professor</i><br>
-      <b>★★★★★</b> “We were standing right there and still had no idea.” — <i>Her sister &amp; his friend</i><br>
-      <b>★★★★★</b> “Otterly adorable.” — <i>The otters 🦦</i>
+      <div class="review"><span class="stars">★★★★★</span><q>“Statistically improbable. Emotionally inevitable.”</q><cite>A former physics professor</cite></div>
+      <div class="review"><span class="stars">★★★★★</span><q>“We were standing right there and still had no idea.”</q><cite>Her sister &amp; his friend</cite></div>
+      <div class="review"><span class="stars">★★★★★</span><q>“Otterly adorable.”</q><cite>The otters 🦦</cite></div>
     </div>
     <div style="animation-delay:3.3s"><button class="btn" id="playBtn">▶ Press play</button></div>
     <div class="rating" style="animation-delay:3.6s">RATED PG · Probably Gonna-say-yes</div>
@@ -421,7 +445,7 @@
 <section class="scene game" id="scene-game">
   <h2>Intermission: a small physics problem</h2>
   <p class="muted game-intro">Otters hold hands so they don't drift apart. Otter <b>Maarten</b> drifted away. Launch him back to otter <b>Celine</b>. 🦦 ➜ 🦦<br>
-    <span class="eq">g = 9.81 m/s² · no air resistance (it's a movie)</span></p>
+    <span class="eq">g = 9.81 m/s²<br>no air resistance (it's a movie)</span></p>
   <canvas id="gameCanvas" aria-label="Otter launch game"></canvas>
   <div class="controls">
     <label>Angle θ <b id="angleVal">45°</b><input type="range" id="angle" min="10" max="80" value="45"></label>
@@ -523,9 +547,13 @@
 <!-- SCENE 6: CREDITS -->
 <section class="scene" id="scene-credits">
   <div class="credits">
-    <h2>The Holi-date</h2>
-    <p class="muted" style="margin:0">Final cut · approved by the leading lady</p>
-    <div class="credit-list" id="creditList"></div>
+    <div class="ticket" id="ticket">
+      <div class="admit">🎟️ Admit two · Private screening</div>
+      <h2>The Holi-date</h2>
+      <p class="muted" style="margin:0 0 18px">Final cut · approved by the leading lady</p>
+      <div class="tear"></div>
+      <div class="credit-list" id="creditList"></div>
+    </div>
     <div class="credit-actions">
       <button class="btn wa" id="waBtn">📲 Send to the director</button>
       <p class="muted" style="margin:0;font-size:.82rem;max-width:340px"><span id="waHint">Your credits are turned into a picture. Pick WhatsApp, then <span data-you></span>'s chat, and tap send. 🎬</span></p>
@@ -851,7 +879,7 @@ const game = (() => {
     if (otter) { const [x, y] = px(otter.x, otter.y); emoji('🦦', x, y - otterSize * .35, { rot: otter.rot }); label(CONFIG.yourName, x, y - otterSize * .9); }
     else {
       if (landed) { const [x] = px(landed, 0); emoji('💦', x, waterY() - otterSize * .3); }
-      const [x, y] = px(START_X, 1.8); emoji('🦦', x, y - otterSize * .2); label(CONFIG.yourName, x, y - otterSize * .75);
+      const [x, y] = px(START_X, 1.8); emoji('🦦', x, y - otterSize * .2); label(CONFIG.yourName, x, waterY() + otterSize * .95);
     }
   }
   function launch() {
@@ -1100,13 +1128,12 @@ function rollCredits() {
 let creditsImage = null, rendering = null;
 function renderCreditsImage() {
   if (!window.html2canvas) return Promise.resolve(null);
-  rendering = html2canvas($('.credits'), {
+  rendering = html2canvas($('#ticket'), {
     scale: 2, backgroundColor: '#1c0d0c', useCORS: true, logging: false,
-    ignoreElements: el => el.classList && (el.classList.contains('credit-actions') || el.id === 'postCredits'),
     onclone: doc => {
-      const c = doc.querySelector('.credits');
-      Object.assign(c.style, { padding: '40px 34px 30px', textAlign: 'center',
-        background: 'radial-gradient(ellipse at 50% 115%, #6b2a1e 0%, #3a1416 40%, #220c0e 72%, #140708 100%)' });
+      const c = doc.querySelector('#ticket');
+      Object.assign(c.style, { textAlign: 'center', boxShadow: 'none',
+        background: 'linear-gradient(180deg, #3d1915, #240d0f 40%, #1f1a14)' });
       doc.querySelectorAll('.credit').forEach(d => { d.style.opacity = 1; d.style.transform = 'none'; d.style.transition = 'none'; });
       const f = doc.createElement('p');
       f.textContent = '🎬 Becx Productions · 🦦';
@@ -1284,6 +1311,7 @@ function showCard(c) {
 async function playTrailer() {
   const run = ++trailerRun;
   trailerDone = false;
+  document.body.classList.add('trailer-playing');
   const w = $('#ytWrap');
   w.classList.remove('nudge');
   if (ytState() === 1 || ytState() === 3) w.classList.add('mini');
@@ -1306,6 +1334,7 @@ function endTrailer() {
   if (trailerDone) return;
   trailerDone = true;
   trailerRun++;
+  document.body.classList.remove('trailer-playing');
   // "Maestro" keeps playing softly into the poster, if it's on
   if (ytState() === 1 || ytState() === 3) { $('#ytWrap').classList.add('mini'); try { yt.setVolume(60); } catch {} }
   else $('#ytWrap').classList.add('gone');
