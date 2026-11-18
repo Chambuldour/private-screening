@@ -121,14 +121,16 @@
   .trailer-start { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 14px; }
   .trailer-start h2 { font-size: clamp(1.8rem, 7vw, 2.6rem); color: var(--gold); margin-top: 8px; }
   .trailer-start .muted { margin: 0 0 10px; line-height: 1.6; }
-  .maestro { width: min(100%, 420px); min-height: 80px; margin-bottom: 6px; }
-  .maestro iframe { border-radius: 12px; display: block; }
-  .maestro.nudge { border-radius: 14px; animation: nudge 1.6s ease-in-out infinite; }
-  @keyframes nudge { 50% { box-shadow: 0 0 0 4px rgba(245,199,107,.55), 0 0 28px rgba(245,199,107,.35); } }
-  .maestro-link { display: none; padding: 16px; border-radius: 12px; background: #1db954; color: #04210f; font-weight: 700; text-decoration: none; text-align: center; }
-  .maestro.blocked { min-height: 0; }
-  .maestro.blocked #maestroEmbed { display: none; }
-  .maestro.blocked .maestro-link { display: block; }
+  .yt-slot { width: min(100%, 400px); aspect-ratio: 16 / 9; margin-bottom: 4px; }
+  .yt-wrap { position: fixed; z-index: 45; width: 0; height: 0; border-radius: 12px; overflow: hidden; background: #000;
+    box-shadow: 0 8px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(245,199,107,.25); }
+  .yt-wrap iframe { width: 100%; height: 100%; display: block; border: 0; }
+  .yt-wrap.mini { left: auto !important; top: auto !important; right: 14px; bottom: 14px;
+    width: clamp(150px, 22vw, 220px) !important; height: calc(clamp(150px, 22vw, 220px) * 9 / 16) !important; opacity: .92; }
+  .yt-wrap.gone { visibility: hidden; pointer-events: none; }
+  .yt-wrap.nudge { animation: nudge 1.6s ease-in-out infinite; }
+  @keyframes nudge { 50% { box-shadow: 0 0 0 4px rgba(245,199,107,.6), 0 0 30px rgba(245,199,107,.4); } }
+  .tap-hint a { color: var(--gold); }
   .start-cue { margin: 4px 0 2px; color: var(--gold); font-family: 'Playfair Display', serif; font-weight: 700; font-size: clamp(1.15rem, 4.6vw, 1.5rem); }
   .start-cue .play-dot { display: inline-flex; align-items: center; justify-content: center; width: 1.5em; height: 1.5em; border-radius: 50%;
     background: var(--gold); color: #2a120a; font-size: .8em; vertical-align: .1em; padding-left: .12em; }
@@ -177,7 +179,7 @@
   .trailer-card.credit-card .aside { font-size: .62em; line-height: 1.5; }
   .trailer-card.dialog-card { font-style: italic; font-weight: 400; font-size: clamp(1.2rem, 5vw, 1.8rem); }
   .trailer-card.caps-card { font-family: 'Inter', sans-serif; font-weight: 600; font-size: clamp(.85rem, 3.4vw, 1.1rem); letter-spacing: .35em; text-transform: uppercase; }
-  .trailer-skip-run { display: none; position: fixed; right: 16px; bottom: 3vh; z-index: 45; margin: 0; }
+  .trailer-skip-run { display: none; position: fixed; left: 16px; bottom: 3vh; z-index: 45; margin: 0; }
 
   .soundtrack { display: block; font-size: .85rem; color: var(--muted); margin-bottom: 26px; }
 
@@ -357,18 +359,18 @@
     <div class="presents"><span data-studio></span> presents</div>
     <h2>Before the feature presentation…</h2>
     <p class="muted">an 80-second trailer. Turn your sound on. 🔊</p>
-    <p class="start-cue" id="startCue">Press <span class="play-dot">▶</span> on the song to start the trailer</p>
-    <div class="maestro nudge"><div id="maestroEmbed"></div>
-      <a class="maestro-link" id="maestroLink" href="https://open.spotify.com/track/03ib2ZaOZzq6iAFuiDhSzp" target="_blank" rel="noopener">🎧 Play “Maestro” on Spotify ↗</a></div>
+    <div class="yt-slot" id="ytSlot"></div>
     <p class="soundtrack-credit muted">Soundtrack: “Maestro” by Hans Zimmer, from your favourite movie.</p>
     <p class="tap-hint" id="tapHint"></p>
-    <button class="btn" id="trailerPlay" style="display:none">▶ Watch the trailer</button>
+    <button class="btn" id="trailerPlay">▶ Watch the trailer</button>
     <button class="btn ghost" id="trailerMuted">Watch without sound</button>
     <button class="skip" id="trailerSkip">skip trailer</button>
   </div>
   <div class="trailer-stage" id="trailerStage"><div class="trailer-card" id="trailerCard" aria-live="polite"></div></div>
 </section>
 <button class="skip trailer-skip-run" id="trailerSkipRun">skip trailer ⏭</button>
+<!-- the official "Maestro" video: the trailer's soundtrack (shown small in the corner while it plays) -->
+<div class="yt-wrap" id="ytWrap"><div id="ytPlayer"></div></div>
 
 <!-- SCENE 1: MOVIE POSTER -->
 <section class="scene" id="scene-poster">
@@ -1166,47 +1168,64 @@ const TRAILER_END = 80.8;
 let trailerRun = 0, trailerDone = false;
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
-/* ---------- Soundtrack: "Maestro" via the official Spotify embed ----------
-   The real song plays through Spotify's own player (legal, nothing is re-hosted).
-   This is the only music on the page. */
-const MAESTRO_URI = 'spotify:track:03ib2ZaOZzq6iAFuiDhSzp';
-let maestro = null, maestroPlaying = false;
-// The trailer starts the moment "Maestro" really plays, however it was started:
-// our button, or her tapping ▶ in the Spotify player itself (needed on iPhone, where
-// Safari doesn't let a page press play inside Spotify's player).
+/* ---------- Soundtrack: "Maestro", the official video on YouTube ----------
+   Plays the full song for everyone (no login needed). Legal: it's YouTube's own player
+   with the official upload, nothing is re-hosted. The trailer starts on the first note. */
+const YT_ID = 'kw4hLrZAcVM'; // The Holiday (OST) – Hans Zimmer – Maestro (Official Visualizer)
+let yt = null, ytReady = false, ytBroken = false, cueing = false;
 const onStartScreen = () => $('#trailerStart').style.display !== 'none' && $('#scene-trailer').classList.contains('active');
-window.onSpotifyIframeApiReady = api => {
-  api.createController($('#maestroEmbed'), { uri: MAESTRO_URI, width: '100%', height: 80 }, controller => {
-    maestro = controller;
-    controller.addListener('playback_update', e => {
-      maestroPlaying = !e.data.isPaused && !e.data.isBuffering;
-      if (maestroPlaying && onStartScreen()) playTrailer();
-    });
+const ytState = () => { try { return yt.getPlayerState(); } catch { return -1; } };
+const ytTime = () => { try { return yt.getCurrentTime() || 0; } catch { return 0; } };
+function placeYt() { // on the start screen the player sits in its slot; during the trailer it's small in the corner
+  const w = $('#ytWrap'); if (w.classList.contains('mini')) return;
+  const r = $('#ytSlot').getBoundingClientRect();
+  Object.assign(w.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+  w.classList.toggle('gone', !onStartScreen() || ytBroken);
+}
+addEventListener('resize', placeYt); addEventListener('scroll', placeYt, { passive: true });
+function ytFailed() {
+  if (ytReady && !ytBroken && yt) return;
+  ytBroken = true; placeYt();
+  $('#ytSlot').style.display = 'none';
+  $('#tapHint').innerHTML = 'The music player couldn’t load here.<br><a href="https://www.youtube.com/watch?v=' + YT_ID + '" target="_blank" rel="noopener">🎧 Start “Maestro” on YouTube</a>, then tap <b>Watch the trailer</b>.';
+  $('#tapHint').classList.add('on');
+}
+window.onYouTubeIframeAPIReady = () => {
+  yt = new YT.Player('ytPlayer', {
+    videoId: YT_ID, width: '100%', height: '100%',
+    playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
+    events: {
+      onReady: () => { ytReady = true; placeYt(); },
+      onError: () => { ytReady = false; ytFailed(); },
+      onStateChange: e => {
+        if (e.data === 1 && onStartScreen()) waitForFirstNote(); // she pressed play (button or the video itself)
+        if (e.data === 0) $('#ytWrap').classList.add('gone');   // song finished
+      },
+    },
   });
 };
-// If a browser or ad blocker stops Spotify's player from loading, show a plain Spotify link instead
-const spotifyBlocked = () => !maestro;
-setTimeout(() => {
-  if (!spotifyBlocked()) return;
-  $('.maestro').classList.add('blocked');
-  $('#startCue').style.display = 'none';
-  $('#trailerPlay').style.display = '';
-  $('#tapHint').innerHTML = 'Your browser is blocking the Spotify player.<br>Start “Maestro” in Spotify above, then tap <b>Watch the trailer</b>.';
-  $('#tapHint').classList.add('on');
-}, 6000);
+setTimeout(() => { if (!ytReady) ytFailed(); }, 9000); // blocked or offline
+async function waitForFirstNote() { // skips past buffering (or an ad) so the first card lands on the first note
+  if (cueing) return; cueing = true;
+  for (let i = 0; i < 400 && onStartScreen(); i++) { if (ytState() === 1 && ytTime() > 0.05) break; await wait(100); }
+  cueing = false;
+  if (onStartScreen()) playTrailer();
+}
 async function startTrailerWithMusic() {
   const btn = $('#trailerPlay');
-  if (maestroPlaying || $('.maestro').classList.contains('blocked')) return playTrailer();
-  for (let i = 0; i < 40 && !maestro; i++) await wait(100); // the player may still be loading
-  if (!maestro) return playTrailer();
-  try { maestro && maestro.play(); } catch { /* she'll tap the player instead */ }
+  if (ytBroken) return playTrailer();
+  for (let i = 0; i < 40 && !ytReady; i++) await wait(100); // the player may still be loading
+  if (!ytReady) return playTrailer();
+  if (ytState() === 1) return waitForFirstNote();
   btn.disabled = true; btn.textContent = '🎵 Cueing the music…';
-  for (let i = 0; i < 25 && !maestroPlaying; i++) await wait(100);
+  try { yt.seekTo(0, true); yt.playVideo(); } catch { /* she'll tap the video instead */ }
+  for (let i = 0; i < 25 && ytState() !== 1 && ytState() !== 3; i++) await wait(100);
   btn.disabled = false; btn.textContent = '▶ Watch the trailer';
-  if (!maestroPlaying && onStartScreen()) {
-    // the browser blocked it: ask her to tap Spotify's own play button
+  if (ytState() !== 1 && ytState() !== 3 && onStartScreen()) {
+    // this browser wants a tap on the video itself (iPhone)
+    $('#tapHint').innerHTML = '👆 Tap ▶ on the video above.<br>The trailer starts together with the music.';
     $('#tapHint').classList.add('on');
-    $('.maestro').classList.add('nudge');
+    $('#ytWrap').classList.add('nudge');
   }
 }
 function setMood(mood) {
@@ -1225,6 +1244,10 @@ function showCard(c) {
 async function playTrailer() {
   const run = ++trailerRun;
   trailerDone = false;
+  const w = $('#ytWrap');
+  w.classList.remove('nudge');
+  if (ytState() === 1 || ytState() === 3) w.classList.add('mini');
+  else { try { yt && yt.pauseVideo(); } catch {} w.classList.add('gone'); }
   $('#trailerStart').style.display = 'none';
   $('#trailerStage').classList.add('on');
   $('#trailerSkipRun').style.display = 'block';
@@ -1244,13 +1267,15 @@ function endTrailer() {
   trailerDone = true;
   trailerRun++;
   // "Maestro" keeps playing softly into the poster, if it's on
+  if (ytState() === 1 || ytState() === 3) { $('#ytWrap').classList.add('mini'); try { yt.setVolume(60); } catch {} }
+  else $('#ytWrap').classList.add('gone');
   setMood('none');
   $('#trailerStage').classList.remove('on');
   $('#trailerSkipRun').style.display = 'none';
   show('poster');
 }
 $('#trailerPlay').addEventListener('click', startTrailerWithMusic);
-$('#trailerMuted').addEventListener('click', () => { if (maestro && maestroPlaying) maestro.pause(); playTrailer(); });
+$('#trailerMuted').addEventListener('click', () => { try { yt && yt.pauseVideo(); } catch {} playTrailer(); });
 $('#trailerSkip').addEventListener('click', endTrailer);
 $('#trailerSkipRun').addEventListener('click', () => { achievement('⏭️', 'Skipped the trailer. Bold.'); endTrailer(); });
 
@@ -1281,7 +1306,7 @@ console.log('%c👀 Inspecting the source code?', 'font-size:18px;font-weight:bo
 console.log(`%cOf course you are. That's exactly why I asked you out, ${CONFIG.herName}. 💚`, 'font-size:13px');
 console.log('%cIn a universe full of variables, you are my favourite constant. 🦦', 'font-size:13px;font-style:italic');
 </script>
-<!-- Official Spotify embed API: plays "Maestro" through Spotify's own player -->
-<script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+<!-- Official YouTube player API: plays the official "Maestro" video -->
+<script src="https://www.youtube.com/iframe_api" async></script>
 </body>
 </html>
