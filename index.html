@@ -369,7 +369,7 @@
   <div class="fx grain" aria-hidden="true"></div>
   <div class="fx flash" id="flash" aria-hidden="true"></div>
   <div class="trailer-start" id="trailerStart">
-    <div class="presents"><span data-you></span> Pictures presents</div>
+    <div class="presents"><span data-studio></span> presents</div>
     <h2>Before the feature presentation…</h2>
     <p class="muted">an 80-second trailer with an original score.<br>Turn your sound on. 🔊</p>
     <button class="btn" id="trailerPlay">▶ Watch the trailer</button>
@@ -383,16 +383,16 @@
 <!-- SCENE 1: MOVIE POSTER -->
 <section class="scene" id="scene-poster">
   <div class="poster">
-    <div class="presents" style="animation-delay:.2s"><span data-you></span> Pictures presents</div>
+    <div class="presents" style="animation-delay:.2s"><span data-studio></span> presents</div>
     <h1 style="animation-delay:.8s">The Holi-date</h1>
     <div class="ornament" style="animation-delay:1.2s">✦ ❄ ✦</div>
     <div class="starring" style="animation-delay:1.6s">Starring</div>
     <div class="star-name" style="animation-delay:1.9s" data-her></div>
     <div class="starring" style="animation-delay:2.1s;margin-top:-12px;margin-bottom:18px">as the leading lady</div>
-    <p class="tagline" style="animation-delay:2.4s">No house swap. No cottage in Surrey.<br>Just one random Belgian supermarket<br>and a probability too small to ignore.</p>
+    <p class="tagline" style="animation-delay:2.4s">Years apart. One summer “hi”.<br>One random Belgian supermarket<br>and a probability too small to ignore.</p>
     <div class="reviews" style="animation-delay:2.9s">
-      <b>★★★★★</b> “A leading lady, not the best friend.” — <i>An old Hollywood screenwriter</i><br>
-      <b>★★★★★</b> “Her favourite movie finally got a sequel.” — <i>The leading lady (probably)</i><br>
+      <b>★★★★★</b> “Statistically improbable. Emotionally inevitable.” — <i>A former physics professor</i><br>
+      <b>★★★★★</b> “We were standing right there and still had no idea.” — <i>Her sister &amp; his friend</i><br>
       <b>★★★★★</b> “Otterly adorable.” — <i>The otters 🦦</i>
     </div>
     <div style="animation-delay:3.3s"><button class="btn" id="playBtn">▶ Press play</button></div>
@@ -566,6 +566,7 @@
 const CONFIG = {
   herName: "Celine",            // her first name
   yourName: "Maarten",          // your name
+  studio: "Becx Productions",   // the studio name in the trailer and on the poster
   // Leave empty: WhatsApp opens with the message ready and she picks your chat.
   // (Optional: your number in international format, digits only, e.g. 32470123456,
   //  to open your chat directly.)
@@ -623,6 +624,7 @@ const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // Fill in names
 $$('[data-her]').forEach(el => el.textContent = CONFIG.herName);
 $$('[data-you]').forEach(el => el.textContent = CONFIG.yourName);
+$$('[data-studio]').forEach(el => el.textContent = CONFIG.studio);
 $$('[data-her-upper]').forEach(el => el.textContent = CONFIG.herName.toUpperCase());
 $$('[data-you-upper]').forEach(el => el.textContent = CONFIG.yourName.toUpperCase());
 document.title = `The Holi-date · starring ${CONFIG.herName}`;
@@ -1350,7 +1352,7 @@ $('#editBtn').addEventListener('click', () => show('montage'));
 const HER = CONFIG.herName;
 const TRAILER = [
   { at: 0,    dur: 3.6, cls: 'approval', text: 'The following preview has been approved for<br><b>one (1) very specific viewer</b>' },
-  { at: 4.2,  dur: 3.4, cls: 'studio', text: `${CONFIG.yourName.toUpperCase()} PICTURES<span class="aside">presents</span>` },
+  { at: 4.2,  dur: 3.4, cls: 'studio', text: `${CONFIG.studio.toUpperCase()}<span class="aside">presents</span>` },
   { at: 8.0,  dur: 2.8, text: 'Coming soon…' },
   { at: 11.0, dur: 3.2, text: 'Years ago, they shared a physics classroom…' },
   { at: 14.4, dur: 3.2, text: '…from 1.5 meters apart.<span class="aside">(Thanks, COVID.)</span>' },
