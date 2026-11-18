@@ -1,0 +1,1166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Holi-date</title>
+<meta name="description" content="Now showing: a holiday movie starring you. Press play.">
+<meta property="og:title" content="🎬 Now showing: The Holi-date">
+<meta property="og:description" content="A holiday movie starring you. Press play — popcorn optional.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #1c0d0c;
+    --gold: #f7c873;
+    --gold-soft: rgba(247, 200, 115, .3);
+    --red: #d9534a;
+    --green: #3f8f62;
+    --cream: #fff4e6;
+    --muted: #d9c2ad;
+    --card: rgba(255, 228, 200, .07);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100svh;
+    background: radial-gradient(ellipse at 50% 110%, #6b2a1e 0%, #3a1416 38%, #220c0e 70%, #140708 100%) fixed;
+    background-color: #1c0d0c;
+    color: var(--cream);
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #snow, #confetti { position: fixed; inset: 0; pointer-events: none; }
+  #snow { z-index: 0; }
+  #confetti { z-index: 50; }
+
+  /* fireplace glow */
+  #hearth {
+    position: fixed; left: -20%; right: -20%; bottom: -28vh; height: 72vh;
+    background: radial-gradient(ellipse at 50% 100%, rgba(255,150,60,.42) 0%, rgba(230,90,35,.2) 35%, rgba(180,50,30,.06) 60%, transparent 72%);
+    pointer-events: none; z-index: 0; transform-origin: 50% 100%;
+    animation: flicker 3.2s ease-in-out infinite;
+  }
+  @keyframes flicker {
+    0%   { opacity: .85; transform: scale(1, 1); }
+    18%  { opacity: .7;  transform: scale(1.01, .96); }
+    35%  { opacity: .95; transform: scale(.99, 1.04); }
+    52%  { opacity: .78; transform: scale(1, .98); }
+    70%  { opacity: 1;   transform: scale(1.02, 1.05); }
+    85%  { opacity: .8;  transform: scale(1, .97); }
+    100% { opacity: .85; transform: scale(1, 1); }
+  }
+
+  /* peeking otter + swimming fish */
+  #peeker {
+    position: fixed; left: 14px; bottom: calc(3.5vh - 10px); z-index: 41;
+    transform: translateY(120%); transition: transform .6s cubic-bezier(.3,1.5,.5,1);
+  }
+  #peeker.show { transform: translateY(0); }
+  #peeker .otter { font-size: 2.6rem; cursor: pointer; display: block; line-height: 1; user-select: none; }
+  #peeker .bubble {
+    position: absolute; bottom: 100%; left: 26px; margin-bottom: 4px;
+    background: var(--cream); color: #3a1a12; font-size: .78rem; font-weight: 600;
+    padding: 6px 10px; border-radius: 12px 12px 12px 2px; white-space: nowrap;
+    opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; pointer-events: none;
+  }
+  #peeker .bubble.show { opacity: 1; transform: none; }
+  #fish {
+    position: fixed; left: 100%; bottom: calc(3.5vh - 2px); z-index: 41; font-size: 1.5rem;
+    pointer-events: none; animation: swim 24s linear infinite; animation-delay: 6s;
+  }
+  @keyframes swim {
+    0%   { transform: translate(0, 0); }
+    10%  { transform: translate(-30vw, -4px); }
+    20%  { transform: translate(-60vw, 2px); }
+    30%  { transform: translate(-90vw, -3px); }
+    36%, 100% { transform: translate(calc(-100vw - 60px), 0); }
+  }
+  body.in-trailer #peeker, body.in-trailer #fish { display: none; }
+
+  /* cinema letterbox bars */
+  .bar { position: fixed; left: 0; right: 0; height: 3.5vh; background: #000; z-index: 40; pointer-events: none; }
+  .bar.top { top: 0; } .bar.bottom { bottom: 0; }
+
+  .scene {
+    position: relative; z-index: 1;
+    display: none; min-height: 100svh;
+    padding: calc(3.5vh + 28px) 16px calc(3.5vh + 28px);
+    flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .scene.active { display: flex; animation: fadeIn .9s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  h1, h2 { font-family: 'Playfair Display', serif; font-style: italic; margin: 0; }
+  .muted { color: var(--muted); }
+
+  .btn {
+    font: 700 1.05rem 'Inter', sans-serif;
+    padding: 14px 30px; border-radius: 999px; border: 0; cursor: pointer;
+    background: var(--gold); color: #241800;
+    box-shadow: 0 6px 24px rgba(245, 199, 107, .35);
+    transition: transform .25s ease, box-shadow .25s ease, background .2s;
+  }
+  .btn:hover { box-shadow: 0 8px 32px rgba(245, 199, 107, .55); }
+  .btn:focus-visible { outline: 3px solid var(--cream); outline-offset: 3px; }
+  .btn.ghost { background: transparent; color: var(--cream); border: 1px solid rgba(255,255,255,.3); box-shadow: none; }
+  .btn.wa { background: #25d366; color: #062b14; box-shadow: 0 6px 24px rgba(37, 211, 102, .35); }
+
+  /* ---------- TRAILER ---------- */
+  .trailer { background: #000; z-index: 2; }
+  .trailer-start { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .trailer-start h2 { font-size: clamp(1.8rem, 7vw, 2.6rem); color: var(--gold); margin-top: 8px; }
+  .trailer-start .muted { margin: 0 0 10px; }
+  .trailer-card {
+    display: none; max-width: 680px;
+    font-family: 'Playfair Display', serif; font-weight: 700;
+    font-size: clamp(1.7rem, 7vw, 3rem); line-height: 1.25;
+    opacity: 0; transform: scale(.96);
+    transition: opacity .7s ease, transform 3.5s linear;
+  }
+  .trailer-card.show { opacity: 1; transform: scale(1.05); }
+  .trailer-card.big { font-style: italic; font-size: clamp(2.8rem, 13vw, 5.5rem); color: var(--gold); text-shadow: 0 0 40px rgba(245,199,107,.45); }
+  .trailer-card.caps { font-family: 'Inter', sans-serif; font-size: clamp(.95rem, 3.6vw, 1.2rem); letter-spacing: .3em; text-transform: uppercase; font-weight: 600; }
+  .trailer-card.credit-card { font-size: clamp(1.1rem, 4.5vw, 1.6rem); font-weight: 400; }
+  .trailer-card .aside { display: block; margin-top: 10px; font-family: 'Inter', sans-serif; font-size: .45em; font-weight: 400; color: var(--muted); }
+  .trailer-card b { color: var(--gold); }
+  .trailer-skip-run { display: none; position: fixed; right: 16px; bottom: calc(3.5vh + 12px); z-index: 45; }
+
+  /* ---------- POSTER ---------- */
+  .poster {
+    width: min(100%, 430px);
+    border: 2px solid var(--gold); border-radius: 6px;
+    padding: 34px 24px 28px;
+    background: linear-gradient(180deg, rgba(217,83,74,.22), rgba(34,12,14,.7) 45%, rgba(63,143,98,.18));
+    box-shadow: 0 0 0 6px rgba(245,199,107,.08), 0 30px 80px rgba(0,0,0,.5);
+  }
+  .poster > * { opacity: 0; animation: fadeIn 1s ease forwards; }
+  .presents { letter-spacing: .3em; font-size: .72rem; text-transform: uppercase; color: var(--muted); }
+  .poster h1 { font-size: clamp(2.4rem, 11vw, 3.4rem); line-height: 1.02; margin: 18px 0 6px; color: var(--gold); text-shadow: 0 0 30px rgba(245,199,107,.35); }
+  .ornament { color: var(--red); letter-spacing: .5em; margin: 6px 0 16px; }
+  .starring { font-size: .8rem; letter-spacing: .25em; text-transform: uppercase; color: var(--muted); }
+  .star-name { font-family: 'Playfair Display', serif; font-size: 1.7rem; margin: 4px 0 18px; }
+  .tagline { font-style: italic; margin: 0 0 20px; line-height: 1.5; }
+  .reviews { font-size: .8rem; color: var(--muted); margin-bottom: 22px; line-height: 1.6; }
+  .reviews b { color: var(--gold); letter-spacing: .1em; }
+  .rating { display: inline-block; border: 1px solid var(--muted); padding: 4px 8px; font-size: .68rem; letter-spacing: .08em; margin-top: 20px; color: var(--muted); }
+
+  /* ---------- SCREENPLAY ---------- */
+  .script {
+    width: min(100%, 560px); text-align: left;
+    background: #fdf6e9; color: #1b1b1b;
+    font-family: 'Courier Prime', monospace; font-size: .98rem; line-height: 1.55;
+    padding: 30px 26px; border-radius: 4px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.5);
+  }
+  .script p { margin: 0 0 14px; opacity: 0; transform: translateY(6px); transition: opacity .7s, transform .7s; }
+  .script p.show { opacity: 1; transform: none; }
+  .script .slug { font-weight: 700; text-transform: uppercase; }
+  .script .char { text-align: center; text-transform: uppercase; margin-bottom: 0; }
+  .script .paren { text-align: center; margin-bottom: 0; }
+  .script .dialog { margin-left: 12%; margin-right: 12%; }
+  .script .right { text-align: right; font-weight: 700; }
+  #toQuestion { margin-top: 26px; opacity: 0; pointer-events: none; transition: opacity .6s; }
+  #toQuestion.show { opacity: 1; pointer-events: auto; }
+  .skip { margin-top: 12px; font-size: .8rem; background: none; border: 0; color: var(--muted); cursor: pointer; text-decoration: underline; }
+
+  /* ---------- GAME ---------- */
+  .game h2 { font-size: clamp(1.7rem, 6.5vw, 2.4rem); color: var(--gold); }
+  .game-intro { max-width: 520px; line-height: 1.55; margin: 12px 0 18px; }
+  .eq { display: inline-block; margin-top: 6px; font-family: 'Courier Prime', monospace; font-size: .85rem; color: var(--gold); }
+  #gameCanvas { width: min(100%, 560px); border-radius: 14px; border: 1px solid var(--gold-soft); display: block; touch-action: manipulation; }
+  .controls { width: min(100%, 560px); display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0 18px; }
+  .controls label { display: flex; flex-direction: column; gap: 6px; text-align: left; font-size: .9rem; color: var(--muted); }
+  .controls b { color: var(--cream); font-family: 'Courier Prime', monospace; }
+  .controls input { width: 100%; accent-color: var(--gold); height: 28px; }
+  .game-msg { min-height: 3em; max-width: 520px; line-height: 1.5; margin: 14px 0 0; }
+  .game-msg code { font-family: 'Courier Prime', monospace; color: var(--gold); }
+
+  /* ---------- QUESTION ---------- */
+  .question h2 { font-size: clamp(2rem, 8vw, 3.3rem); line-height: 1.15; max-width: 720px; }
+  .question .name { color: var(--gold); }
+  .question .sub { margin: 18px 0 34px; }
+  .choices { display: flex; gap: 22px; align-items: center; justify-content: center; flex-wrap: wrap; min-height: 120px; }
+  #yesBtn { font-size: 1.25rem; padding: 16px 40px; background: var(--green); color: #fff; box-shadow: 0 6px 30px rgba(63,174,130,.45); }
+  #noBtn { background: var(--red); color: #fff; box-shadow: none; z-index: 30; white-space: nowrap; transition: left .35s ease, top .35s ease, transform .25s; }
+  #noBtn.converted { background: var(--green); }
+  .spoiler { margin-top: 40px; font-size: .78rem; }
+  .task-line { display: inline-block; margin-top: 10px; font-family: 'Courier Prime', monospace; color: var(--gold); }
+  #stopwatch { font-variant-numeric: tabular-nums; }
+  .task-result {
+    display: inline-block; margin-top: 16px; padding: 8px 16px;
+    border: 1px dashed var(--gold); border-radius: 10px;
+    font-family: 'Courier Prime', monospace; color: var(--gold);
+  }
+
+  /* ---------- YES ---------- */
+  .yes h2 { font-size: clamp(2.3rem, 10vw, 4rem); color: var(--gold); }
+  .yes p { max-width: 460px; line-height: 1.6; margin: 18px auto 30px; }
+  .big-emoji { font-size: 4rem; margin-bottom: 10px; animation: bob 2s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(-10px) rotate(-6deg); } }
+
+  /* ---------- MONTAGE FORM ---------- */
+  .montage { justify-content: flex-start; }
+  .montage header { max-width: 560px; margin-bottom: 22px; }
+  .montage header h2 { font-size: clamp(1.9rem, 7vw, 2.6rem); color: var(--gold); }
+  .montage header p { line-height: 1.55; margin: 10px 0 0; }
+  form { width: min(100%, 580px); display: flex; flex-direction: column; gap: 16px; }
+  fieldset {
+    border: 1px solid var(--gold-soft); border-radius: 16px; background: var(--card);
+    padding: 18px 16px 18px; margin: 0; text-align: left;
+    transition: border-color .3s, box-shadow .3s;
+  }
+  fieldset.missing { border-color: var(--red); box-shadow: 0 0 0 3px rgba(224,85,85,.25); }
+  legend { padding: 0 8px; font-family: 'Courier Prime', monospace; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+  .q { font-weight: 700; font-size: 1.08rem; margin: 2px 0 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { position: relative; }
+  .chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .chip span {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 14px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.04);
+    font-size: .95rem; cursor: pointer; user-select: none;
+    transition: background .2s, border-color .2s, transform .15s;
+  }
+  .chip:hover span { border-color: var(--gold-soft); }
+  .chip input:checked + span { background: var(--gold); color: #241800; border-color: var(--gold); font-weight: 600; transform: scale(1.04); }
+  .chip input:focus-visible + span { outline: 2px solid var(--cream); outline-offset: 2px; }
+  .other-input { display: none; margin-top: 10px; }
+  .other-input.show { display: block; animation: fadeIn .4s; }
+  input[type=text], input[type=date], textarea {
+    width: 100%; font: 400 1rem 'Inter', sans-serif; color: var(--cream);
+    background: rgba(0,0,0,.25); border: 1px solid rgba(255,255,255,.2); border-radius: 10px;
+    padding: 12px 14px; color-scheme: dark;
+  }
+  input:focus, textarea:focus { outline: none; border-color: var(--gold); }
+  textarea { min-height: 96px; resize: vertical; }
+  .hint { font-size: .8rem; color: var(--muted); margin: 10px 0 6px; }
+  .form-actions { text-align: center; margin-top: 6px; }
+  #formError { color: #ffb3b3; min-height: 1.4em; font-size: .9rem; margin-top: 12px; }
+
+  /* ---------- CREDITS ---------- */
+  .credits { width: min(100%, 520px); }
+  .credits h2 { font-size: clamp(2rem, 8vw, 2.8rem); color: var(--gold); margin-bottom: 6px; }
+  .credit-list { margin: 26px 0; font-family: 'Courier Prime', monospace; }
+  .credit { opacity: 0; transform: translateY(10px); transition: opacity .7s, transform .7s; margin-bottom: 18px; }
+  .credit.show { opacity: 1; transform: none; }
+  .credit .role { font-size: .74rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+  .credit .val { font-size: 1.12rem; margin-top: 3px; overflow-wrap: anywhere; }
+  .disclaimer { font-size: .74rem; color: var(--muted); font-style: italic; }
+  .credit-actions { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 10px; }
+  .post-credits { margin-top: 34px; font-size: .85rem; color: var(--muted); opacity: 0; transition: opacity 1s; }
+  .post-credits.show { opacity: 1; }
+
+  /* ---------- ACHIEVEMENT TOAST ---------- */
+  #toast {
+    position: fixed; left: 50%; bottom: calc(3.5vh + 16px); z-index: 60;
+    transform: translate(-50%, 140%); opacity: 0;
+    display: flex; align-items: center; gap: 12px;
+    width: max-content; max-width: calc(100vw - 32px);
+    background: #2c1412; border: 1px solid var(--gold); border-radius: 14px;
+    padding: 10px 16px 10px 12px; box-shadow: 0 10px 40px rgba(0,0,0,.5);
+    transition: transform .45s cubic-bezier(.2,1.4,.4,1), opacity .3s;
+  }
+  #toast.show { transform: translate(-50%, 0); opacity: 1; }
+  #toast .icon { font-size: 1.8rem; }
+  #toast .label { font-size: .68rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+  #toast .text { font-weight: 600; font-size: .92rem; text-align: left; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body class="in-trailer">
+<canvas id="snow"></canvas>
+<div id="hearth" aria-hidden="true"></div>
+<canvas id="confetti"></canvas>
+<div id="peeker" aria-hidden="true"><div class="bubble"></div><span class="otter">🦦</span></div>
+<div id="fish" aria-hidden="true">🐟</div>
+<div class="bar top"></div><div class="bar bottom"></div>
+
+<!-- SCENE 0: TRAILER -->
+<section class="scene active trailer" id="scene-trailer">
+  <div class="trailer-start" id="trailerStart">
+    <div class="presents"><span data-you></span> Pictures presents</div>
+    <h2>Before the feature presentation…</h2>
+    <p class="muted">a short trailer. Best with sound on. 🔊</p>
+    <button class="btn" id="trailerPlay">▶ Watch the trailer</button>
+    <button class="btn ghost" id="trailerMuted">Watch without sound</button>
+    <button class="skip" id="trailerSkip">skip trailer</button>
+  </div>
+  <div class="trailer-card" id="trailerCard" aria-live="polite"></div>
+  <button class="skip trailer-skip-run" id="trailerSkipRun">skip trailer ⏭</button>
+</section>
+
+<!-- SCENE 1: MOVIE POSTER -->
+<section class="scene" id="scene-poster">
+  <div class="poster">
+    <div class="presents" style="animation-delay:.2s"><span data-you></span> Pictures presents</div>
+    <h1 style="animation-delay:.8s">The Holi-date</h1>
+    <div class="ornament" style="animation-delay:1.2s">✦ ❄ ✦</div>
+    <div class="starring" style="animation-delay:1.6s">Starring</div>
+    <div class="star-name" style="animation-delay:1.9s" data-her></div>
+    <div class="starring" style="animation-delay:2.1s;margin-top:-12px;margin-bottom:18px">as the leading lady</div>
+    <p class="tagline" style="animation-delay:2.4s">No house swap. No cottage in Surrey.<br>Just one random Belgian supermarket<br>and a probability too small to ignore.</p>
+    <div class="reviews" style="animation-delay:2.9s">
+      <b>★★★★★</b> “A leading lady, not the best friend.” — <i>An old Hollywood screenwriter</i><br>
+      <b>★★★★★</b> “I'm a weeper. I wept.” — <i>A widowed book editor</i><br>
+      <b>★★★★★</b> “Otterly adorable.” — <i>The otters 🦦</i>
+    </div>
+    <div style="animation-delay:3.3s"><button class="btn" id="playBtn">▶ Press play</button></div>
+    <div class="rating" style="animation-delay:3.6s">RATED PG · Probably Gonna-say-yes</div>
+  </div>
+</section>
+
+<!-- SCENE 2: SCREENPLAY -->
+<section class="scene" id="scene-script">
+  <div class="script" id="script">
+    <p class="slug">FADE IN:</p>
+    <p class="slug">INT. A RANDOM BELGIAN SUPERMARKET – MIDDAY</p>
+    <p>Fluorescent lights hum over the fish section. Outside, snow falls in that suspiciously perfect, big-movie-budget way. It's no English cottage in the snow, but the lighting is doing its best.</p>
+    <p><span data-her-upper></span>, physicist and undefeated baking legend, is deep in thought at the fish counter. <span data-you-upper></span> turns the corner with a shopping basket and zero plan. They haven't seen each other since physics class.</p>
+    <p class="char"><span data-you-upper></span></p>
+    <p class="paren">(clears throat, nervous)</p>
+    <p class="dialog">I calculated the odds of running into you here on the back of my receipt. They're tiny. Statistically, that's not a coincidence anymore. That's a sign.</p>
+    <p class="char"><span data-you-upper></span> (V.O.)</p>
+    <p class="paren">(deep movie-trailer voice, clearly practised)</p>
+    <p class="dialog">This Christmas... two old physics classmates... one fish counter... and the most improbable meet-cute in Belgian history.</p>
+    <p class="char"><span data-you-upper></span></p>
+    <p class="paren">(normal voice, immediately)</p>
+    <p class="dialog">Sorry. I panicked. Something smelled fishy... turns out it was just fate.</p>
+    <p>But first, a small physics problem stands in the way of true love.</p>
+    <p class="right">SMASH CUT TO:</p>
+  </div>
+  <button class="btn" id="toQuestion">Continue the story ➜</button>
+  <button class="skip" id="skipScript">skip cutscene</button>
+</section>
+
+<!-- SCENE 2.5: OTTER-LAUNCH PHYSICS GAME -->
+<section class="scene game" id="scene-game">
+  <h2>Intermission: a small physics problem</h2>
+  <p class="muted game-intro">Otters hold hands so they don't drift apart. This one drifted. Launch it back to its partner. 🦦 ➜ 🦦<br>
+    <span class="eq">g = 9.81 m/s² · no air resistance (it's a movie)</span></p>
+  <canvas id="gameCanvas" aria-label="Otter launch game"></canvas>
+  <div class="controls">
+    <label>Angle θ <b id="angleVal">45°</b><input type="range" id="angle" min="10" max="80" value="45"></label>
+    <label>Speed v₀ <b id="speedVal">15.0 m/s</b><input type="range" id="speed" min="5" max="25" step="0.5" value="15"></label>
+  </div>
+  <button class="btn" id="launchBtn">🚀 Launch otter</button>
+  <p class="game-msg" id="gameMsg" role="status"></p>
+  <button class="skip" id="skipGame">skip the physics, I'm here for the question</button>
+</section>
+
+<!-- SCENE 3: THE QUESTION -->
+<section class="scene question" id="scene-question">
+  <h2><span class="name" data-her></span>, will you go on a date with me?</h2>
+  <p class="sub muted">Schrödinger's date: until you click, it's both a yes and a no. 🐱📦<br>
+    <span class="task-line">⏱️ Your time starts now: <b id="stopwatch">0.0</b>s</span></p>
+  <div class="choices">
+    <button class="btn" id="yesBtn">Yes! 💚</button>
+    <button class="btn" id="noBtn">No</button>
+  </div>
+  <p class="spoiler muted">Spoiler alert: this movie only has one ending.</p>
+</section>
+
+<!-- SCENE 4: SHE SAID YES -->
+<section class="scene yes" id="scene-yes">
+  <div class="big-emoji">🦦</div>
+  <h2>Cue the swelling orchestra!</h2>
+  <div class="task-result" id="taskResult"></div>
+  <p>The snow falls a little slower. Somewhere, a woman who hasn't cried since she was fifteen finally sheds a single tear.<br><br>Every leading lady deserves her own theme song. So I had one composed for you. (OK, my browser did.)</p>
+  <button class="btn ghost" id="themeBtn" style="margin-bottom:22px">🎹 Play Celine's theme</button>
+  <p style="margin-top:0">Now let's write the rest of the movie together.</p>
+  <button class="btn" id="toMontage">🎬 Roll the montage</button>
+</section>
+
+<!-- SCENE 5: MONTAGE (CHOICES) -->
+<section class="scene montage" id="scene-montage">
+  <header>
+    <h2>The Date Montage</h2>
+    <p class="muted">You're the co-director now. Complete the tasks below. All the information is on the task. If nothing fits, “Other” is always allowed. Creativity earns bonus points.</p>
+  </header>
+
+  <form id="dateForm" novalidate>
+    <fieldset id="fs-when">
+      <legend>Task 1 · Release date</legend>
+      <p class="q">When does our story take place?</p>
+      <input type="date" id="dateInput" aria-label="Pick a date">
+      <p class="hint">Or something else? (e.g. “any Saturday in December”)</p>
+      <input type="text" id="dateOther" placeholder="Other: describe when…" maxlength="80">
+      <p class="hint" style="margin-top:16px">What time of day?</p>
+      <div class="chips" data-group="time"></div>
+      <div class="other-input" data-other-for="time"><input type="text" placeholder="Other: what time works for you?" maxlength="80"></div>
+    </fieldset>
+
+    <fieldset id="fs-activity">
+      <legend>Task 2 · The montage</legend>
+      <p class="q">What are we doing? <span class="muted" style="font-weight:400">(pick as many as you like)</span></p>
+      <div class="chips" data-group="activity"></div>
+      <div class="other-input" data-other-for="activity"><input type="text" placeholder="Other: your idea…" maxlength="100"></div>
+    </fieldset>
+
+    <fieldset id="fs-food">
+      <legend>Task 3 · Craft services</legend>
+      <p class="q">What's on the menu? <span class="muted" style="font-weight:400">(pick as many as you like)</span></p>
+      <div class="chips" data-group="food"></div>
+      <div class="other-input" data-other-for="food"><input type="text" placeholder="Other: what are you craving?" maxlength="100"></div>
+    </fieldset>
+
+    <fieldset id="fs-dress">
+      <legend>Task 4 · Wardrobe department</legend>
+      <p class="q">What's the dress code?</p>
+      <div class="chips" data-group="dress"></div>
+      <div class="other-input" data-other-for="dress"><input type="text" placeholder="Other: surprise me with a dress code…" maxlength="100"></div>
+    </fieldset>
+
+    <fieldset id="fs-pay">
+      <legend>Task 5 · Film budget</legend>
+      <p class="q">Who pays?</p>
+      <div class="chips" data-group="pay"></div>
+      <div class="other-input" data-other-for="pay"><input type="text" placeholder="Other: (spoiler: he still pays)" maxlength="100"></div>
+    </fieldset>
+
+    <fieldset id="fs-notes">
+      <legend>Task 6 · Director's notes</legend>
+      <p class="q">Anything you want to tell me? <span class="muted" style="font-weight:400">(optional)</span></p>
+      <textarea id="notes" placeholder="Plot twists, fish puns, which cake you're bringing (no pressure 👀)…" maxlength="500"></textarea>
+    </fieldset>
+
+    <div class="form-actions">
+      <button type="submit" class="btn">🎬 That's a wrap!</button>
+      <div id="formError" role="alert"></div>
+    </div>
+  </form>
+</section>
+
+<!-- SCENE 6: CREDITS -->
+<section class="scene" id="scene-credits">
+  <div class="credits">
+    <h2>The Holi-date</h2>
+    <p class="muted" style="margin:0">Final cut · approved by the leading lady</p>
+    <div class="credit-list" id="creditList"></div>
+    <div class="credit-actions">
+      <button class="btn wa" id="waBtn">📲 Send to the director</button>
+      <p class="muted" style="margin:0;font-size:.82rem;max-width:340px">WhatsApp opens with your answers ready. Pick <span data-you></span>'s chat and tap send. 🎬</p>
+      <button class="btn ghost" id="copyBtn">Copy as text</button>
+      <button class="skip" id="editBtn">← back to editing</button>
+    </div>
+    <p class="post-credits" id="postCredits">🎞️ <b>Post-credits scene:</b> a nerd, staring at his phone, refreshing WhatsApp at a frequency of roughly 0.33 Hz.</p>
+  </div>
+</section>
+
+<div id="toast" role="status" aria-live="polite">
+  <div class="icon"></div>
+  <div><div class="label">Achievement unlocked</div><div class="text"></div></div>
+</div>
+
+<script>
+/* =====================================================
+   ✏️  CONFIG — EDIT THESE
+   ===================================================== */
+const CONFIG = {
+  herName: "Celine",            // her first name
+  yourName: "Maarten",          // your name
+  // Leave empty: WhatsApp opens with the message ready and she picks your chat.
+  // (Optional: your number in international format, digits only, e.g. 32470123456,
+  //  to open your chat directly.)
+  whatsappNumber: "",
+
+  times: ["☀️ Afternoon", "🌆 Evening", "🌌 When the stars come out"],
+  activities: [
+    "🌲 Forest walk (with hot chocolate in a thermos)",
+    "🔭 Stargazing",
+    "🎄 Christmas market",
+    "🦦 Visiting the otters (and the sea lions) at the zoo",
+    "🧁 Baking together (you teach, I eat)",
+    "🪐 Planetarium or science museum",
+    "🏡 Watching The Holiday under a blanket (cottage vibes)",
+    "🍿 Fantasy movie marathon + blankets",
+    "⛸️ Ice skating",
+  ],
+  foods: [
+    "🍟 Belgian fries, obviously",
+    "🍜 Ramen",
+    "🍕 Pizza",
+    "🍣 Sushi",
+    "🧺 Picnic under the stars",
+    "🧁 Your legendary baking (I bring the hot chocolate)",
+  ],
+  dressCodes: [
+    "🧶 Cozy sweaters",
+    "🎄 Matching Christmas jumpers",
+    "✨ Fancy, let's dress up",
+    "🧦 Pajamas & fluffy socks",
+  ],
+  whoPays: [
+    "💸 Maarten pays",
+    "🧾 I'll graciously let Maarten pay",
+    "⚖️ We split it, physics-style: proportional to mass (so… Maarten pays)",
+    "🦦 The otters pay (they don't, Maarten does)",
+  ],
+};
+/* ===================================================== */
+
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Fill in names
+$$('[data-her]').forEach(el => el.textContent = CONFIG.herName);
+$$('[data-you]').forEach(el => el.textContent = CONFIG.yourName);
+$$('[data-her-upper]').forEach(el => el.textContent = CONFIG.herName.toUpperCase());
+$$('[data-you-upper]').forEach(el => el.textContent = CONFIG.yourName.toUpperCase());
+document.title = `The Holi-date · starring ${CONFIG.herName}`;
+
+/* ---------- Scene switching ---------- */
+function show(id) {
+  $$('.scene').forEach(s => s.classList.remove('active'));
+  $('#scene-' + id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  document.body.classList.toggle('in-trailer', id === 'trailer');
+  peek(id);
+}
+
+/* ---------- Peeking otter: pops up with a comment on every scene ---------- */
+const PEEK_LINES = {
+  poster: 'psst… press play 🍿',
+  script: 'the fish section, huh? 🐟',
+  game: 'aim for my partner! 🎯',
+  question: 'say yes 🥺',
+  yes: 'we hold hands now 🦦💞',
+  montage: 'pick the otters 👀',
+  credits: 'sea-lion approved 🦭',
+};
+let peekTimers = [];
+function peek(id) {
+  const p = $('#peeker'), bubble = $('.bubble', p);
+  peekTimers.forEach(clearTimeout);
+  p.classList.remove('show'); bubble.classList.remove('show');
+  if (!PEEK_LINES[id]) return;
+  peekTimers = [
+    setTimeout(() => { bubble.textContent = PEEK_LINES[id]; p.classList.add('show'); }, 1800),
+    setTimeout(() => bubble.classList.add('show'), 2300),
+    setTimeout(() => bubble.classList.remove('show'), 6500),
+  ];
+}
+let boops = 0;
+$('#peeker .otter').addEventListener('click', () => {
+  boops++;
+  const bubble = $('#peeker .bubble');
+  bubble.textContent = boops >= 3 ? 'ok, that tickles 😆' : 'boop! 🦦';
+  bubble.classList.add('show');
+  setTimeout(() => bubble.classList.remove('show'), 1800);
+  if (boops === 3) achievement('🦦', 'Professional otter booper');
+});
+
+/* ---------- Achievement toast ---------- */
+let toastTimer;
+const unlocked = new Set();
+function achievement(icon, text, key = text) {
+  if (unlocked.has(key)) return;
+  unlocked.add(key);
+  const t = $('#toast');
+  $('.icon', t).textContent = icon;
+  $('.text', t).textContent = text;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* ---------- Snow ---------- */
+(function snow() {
+  const c = $('#snow'), ctx = c.getContext('2d');
+  let flakes = [], w, h;
+  function resize() {
+    w = c.width = innerWidth * devicePixelRatio;
+    h = c.height = innerHeight * devicePixelRatio;
+    const n = Math.round((innerWidth * innerHeight) / (reduceMotion ? 26000 : 9000));
+    flakes = Array.from({ length: n }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      r: (Math.random() * 2.2 + .6) * devicePixelRatio,
+      s: (Math.random() * .6 + .3) * devicePixelRatio,
+      d: Math.random() * Math.PI * 2,
+    }));
+  }
+  function tick() {
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = 'rgba(255,255,255,.8)';
+    for (const f of flakes) {
+      f.y += f.s * (reduceMotion ? .3 : 1);
+      f.d += .01;
+      f.x += Math.sin(f.d) * .4 * devicePixelRatio;
+      if (f.y > h) { f.y = -5; f.x = Math.random() * w; }
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
+    }
+    requestAnimationFrame(tick);
+  }
+  addEventListener('resize', resize);
+  resize(); tick();
+})();
+
+/* ---------- Confetti ---------- */
+function confetti() {
+  if (reduceMotion) return;
+  const c = $('#confetti'), ctx = c.getContext('2d');
+  const dpr = devicePixelRatio;
+  c.width = innerWidth * dpr; c.height = innerHeight * dpr;
+  const colors = ['#f5c76b', '#e05555', '#3fae82', '#fdf6e9', '#8fb8ff'];
+  const parts = Array.from({ length: 180 }, () => ({
+    x: c.width / 2, y: c.height * .45,
+    vx: (Math.random() - .5) * 22 * dpr, vy: (Math.random() * -18 - 6) * dpr,
+    w: (Math.random() * 8 + 5) * dpr, h: (Math.random() * 5 + 3) * dpr,
+    rot: Math.random() * 6, vr: (Math.random() - .5) * .3,
+    color: colors[Math.floor(Math.random() * colors.length)],
+  }));
+  const start = performance.now();
+  (function frame(now) {
+    ctx.clearRect(0, 0, c.width, c.height);
+    for (const p of parts) {
+      p.vy += .5 * dpr; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+    if (now - start < 4500) requestAnimationFrame(frame);
+    else ctx.clearRect(0, 0, c.width, c.height);
+  })(start);
+}
+
+/* ---------- Scene 1 → 2: screenplay ---------- */
+let scriptTimers = [];
+function playScript() {
+  show('script');
+  const lines = $$('#script p');
+  lines.forEach((p, i) => scriptTimers.push(setTimeout(() => {
+    p.classList.add('show');
+    p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 500 + i * 1100)));
+  scriptTimers.push(setTimeout(finishScript, 500 + lines.length * 1100));
+}
+function finishScript() {
+  scriptTimers.forEach(clearTimeout);
+  $$('#script p').forEach(p => p.classList.add('show'));
+  $('#toQuestion').classList.add('show');
+  $('#skipScript').style.visibility = 'hidden';
+  setTimeout(() => $('#toQuestion').scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+}
+$('#playBtn').addEventListener('click', () => { achievement('🍿', 'Pressed play. Brave.'); playScript(); });
+$('#skipScript').addEventListener('click', () => { achievement('⏩', 'Speedrunner: skipped the cutscene'); finishScript(); });
+/* Taskmaster-style stopwatch: how long does it take her to say yes? */
+let taskStart = 0, taskSeconds = 0, stopwatchTimer;
+function startQuestion() {
+  show('question');
+  taskStart = performance.now();
+  stopwatchTimer = setInterval(() => {
+    $('#stopwatch').textContent = ((performance.now() - taskStart) / 1000).toFixed(1);
+  }, 100);
+}
+$('#toQuestion').addEventListener('click', () => { show('game'); game.init(); });
+
+/* ---------- Otter-launch physics game (projectile motion) ---------- */
+const game = (() => {
+  const cv = $('#gameCanvas'), ctx = cv.getContext('2d');
+  const WORLD_W = 64, G = 9.81, START_X = 4, HIT_R = 2.5;
+  const angleIn = $('#angle'), speedIn = $('#speed'), btn = $('#launchBtn'), msg = $('#gameMsg');
+  let W = 0, H = 0, ppm = 1, target = 40, otter = null, landed = null, trail = [], misses = 0, won = false, ready = false;
+
+  const waterY = () => H * .8;
+  const px = (x, y) => [x * ppm, waterY() - y * ppm];
+
+  function size() {
+    W = cv.clientWidth; H = Math.round(W * .58);
+    cv.style.height = H + 'px';
+    cv.width = W * devicePixelRatio; cv.height = H * devicePixelRatio;
+    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    ppm = W / WORLD_W;
+    draw();
+  }
+  function emoji(ch, x, y, { rot = 0, flip = false, size = Math.max(20, ppm * 3.4) } = {}) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); if (flip) ctx.scale(-1, 1);
+    ctx.font = `${size}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(ch, 0, 0); ctx.restore();
+  }
+  function draw() {
+    if (!W) return;
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#1f2a5e'); sky.addColorStop(1, '#0d1430');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    // moon + a few stars
+    ctx.fillStyle = '#fdf6e9';
+    ctx.beginPath(); ctx.arc(W * .86, H * .16, Math.max(8, W * .03), 0, 7); ctx.fill();
+    for (let i = 0; i < 18; i++) { ctx.globalAlpha = .5; ctx.fillRect((i * 97) % W, (i * 53) % (H * .5), 1.5, 1.5); }
+    ctx.globalAlpha = 1;
+    // water
+    ctx.fillStyle = '#16365a'; ctx.fillRect(0, waterY(), W, H - waterY());
+    ctx.strokeStyle = 'rgba(255,255,255,.3)'; ctx.lineWidth = 1.5; ctx.beginPath();
+    for (let x = 0; x <= W; x += 6) ctx.lineTo(x, waterY() + Math.sin(x / 14) * 1.5);
+    ctx.stroke();
+    // distance ticks
+    ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.font = '10px "Courier Prime", monospace'; ctx.textAlign = 'left';
+    for (let m = 10; m < WORLD_W; m += 10) { const [x] = px(m, 0); ctx.fillRect(x, waterY() + 5, 1, 6); ctx.fillText(m + ' m', x + 3, waterY() + 20); }
+    // rock (launch pad)
+    ctx.fillStyle = '#4c5270';
+    ctx.beginPath(); ctx.ellipse(START_X * ppm, waterY() + 2, 3.4 * ppm, 2 * ppm, 0, Math.PI, 0); ctx.fill();
+    // target zone + partner otter
+    const [tx] = px(target, 0);
+    ctx.fillStyle = 'rgba(245,199,107,.35)';
+    ctx.fillRect((target - HIT_R) * ppm, waterY() - 1.5, HIT_R * 2 * ppm, 3);
+    const otterSize = Math.max(20, ppm * 3.4);
+    // aim arrow
+    if (!otter && !won) {
+      const th = angleIn.value * Math.PI / 180, len = speedIn.value * ppm * .5;
+      const [sx, sy] = px(START_X, 1.8);
+      ctx.strokeStyle = 'rgba(245,199,107,.8)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + Math.cos(th) * len, sy - Math.sin(th) * len); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // trail
+    ctx.fillStyle = 'rgba(245,199,107,.75)';
+    for (const [wx, wy] of trail) { const [x, y] = px(wx, wy); ctx.beginPath(); ctx.arc(x, y, 1.6, 0, 7); ctx.fill(); }
+    if (won) {
+      emoji('🦦', tx - otterSize * .45, waterY() - otterSize * .35);
+      emoji('🦦', tx + otterSize * .45, waterY() - otterSize * .35, { flip: true });
+      emoji('💞', tx, waterY() - otterSize * 1.3, { size: otterSize * .8 });
+      return;
+    }
+    emoji('🦦', tx, waterY() - otterSize * .35, { flip: true });
+    if (otter) { const [x, y] = px(otter.x, otter.y); emoji('🦦', x, y - otterSize * .35, { rot: otter.rot }); }
+    else if (landed) { const [x] = px(landed, 0); emoji('💦', x, waterY() - otterSize * .3); }
+    else { const [x, y] = px(START_X, 1.8); emoji('🦦', x, y - otterSize * .2); }
+  }
+  function launch() {
+    if (otter || won) return;
+    const th = angleIn.value * Math.PI / 180, v = +speedIn.value;
+    otter = { x: START_X, y: 0, vx: v * Math.cos(th), vy: v * Math.sin(th), t: 0, rot: 0 };
+    trail = []; landed = null; msg.textContent = 'Wheeee…';
+    btn.disabled = true;
+    let last = performance.now();
+    const step = now => {
+      const dt = Math.min(.05, (now - last) / 1000) * 1.6; last = now;
+      otter.vy -= G * dt; otter.x += otter.vx * dt; otter.y += otter.vy * dt; otter.t += dt; otter.rot += dt * 5;
+      trail.push([otter.x, Math.max(0, otter.y)]);
+      if ((otter.y <= 0 && otter.vy < 0) || otter.x > WORLD_W + 3) return land();
+      draw(); requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  function land() {
+    const x = otter.x, t = otter.t, d = x - target;
+    otter = null; btn.disabled = false;
+    if (Math.abs(d) <= HIT_R) {
+      won = true; draw(); confetti();
+      msg.innerHTML = `Splashdown at <code>${x.toFixed(1)} m</code> after <code>${t.toFixed(2)} s</code>. Otters reunited, hands held. 🦦🤝🦦`;
+      achievement('🦦', 'Otter reunion: that physics degree finally paid off');
+      btn.textContent = 'Continue the story ➜';
+      $('#skipGame').style.visibility = 'hidden';
+      return;
+    }
+    misses++; landed = Math.min(x, WORLD_W); draw();
+    let text = x > WORLD_W ? 'Whoosh! That otter left the screen. Too much speed. ' :
+      d < 0 ? `Splash! ${Math.abs(d).toFixed(1)} m short. ` : `Splash! ${d.toFixed(1)} m too far. `;
+    if (misses >= 4) text += `Physicist's cheat sheet: at 45°, you need <code>v₀ = √(R·g) ≈ ${Math.sqrt(target * G).toFixed(1)} m/s</code>.`;
+    else if (misses >= 2) text += `Hint: <code>R = v₀²·sin(2θ) / g</code>. The partner is ${(target - START_X).toFixed(0)} m away.`;
+    msg.innerHTML = text;
+  }
+  angleIn.addEventListener('input', () => { $('#angleVal').textContent = angleIn.value + '°'; draw(); });
+  speedIn.addEventListener('input', () => { $('#speedVal').textContent = (+speedIn.value).toFixed(1) + ' m/s'; draw(); });
+  btn.addEventListener('click', () => { if (won) startQuestion(); else launch(); });
+  $('#skipGame').addEventListener('click', startQuestion);
+  addEventListener('resize', () => { if (ready) size(); });
+  return {
+    init() {
+      if (!ready) target = START_X + 24 + Math.random() * 22; // 28–50 m: always reachable
+      ready = true;
+      requestAnimationFrame(size);
+    },
+  };
+})();
+
+/* ---------- Scene 3: the runaway No button ---------- */
+const yesBtn = $('#yesBtn'), noBtn = $('#noBtn');
+const noTexts = [
+  "Are you sure?",
+  "Heisenberg says you can't be that certain",
+  "That violates conservation of energy ⚡",
+  "Entropy says this ends in yes",
+  "Error 404: 'No' not found",
+  "The otters are disappointed 🦦",
+  "Leading ladies don't say no",
+  "Graham is crying now (he's a weeper)",
+  "Okay fine, I'll make it easy…",
+];
+let noCount = 0, converted = false;
+
+function dodge(e) {
+  if (converted) return;
+  e && e.preventDefault();
+  noCount++;
+  if (noCount === 1) achievement('🏃', 'The No button has left the chat');
+  if (noCount === 5) achievement('🧐', 'Persistent. I respect that.');
+
+  yesBtn.style.transform = `scale(${Math.min(1 + noCount * 0.14, 2.1)})`;
+
+  if (noCount > noTexts.length) {
+    // Give up: the No button becomes another Yes
+    converted = true;
+    noBtn.textContent = 'Fine, yes 🙃';
+    noBtn.classList.add('converted');
+    achievement('🧻', 'Mr. Napkinhead approves of this ending');
+    return;
+  }
+  noBtn.textContent = noTexts[noCount - 1];
+
+  // Move to a random spot that doesn't cover the Yes button
+  const r = noBtn.getBoundingClientRect();
+  const yr = yesBtn.getBoundingClientRect();
+  const pad = 16, top0 = innerHeight * .035 + pad;
+  let x, y, tries = 0;
+  do {
+    x = pad + Math.random() * Math.max(0, innerWidth - r.width - pad * 2);
+    y = top0 + Math.random() * Math.max(0, innerHeight - r.height - top0 * 2);
+    tries++;
+  } while (tries < 30 &&
+    x < yr.right + 20 && x + r.width > yr.left - 20 &&
+    y < yr.bottom + 20 && y + r.height > yr.top - 20);
+
+  if (noBtn.style.position !== 'fixed') {
+    noBtn.style.position = 'fixed';
+    noBtn.style.left = r.left + 'px';
+    noBtn.style.top = r.top + 'px';
+    noBtn.offsetWidth; // let the browser register the start position
+  }
+  noBtn.style.left = x + 'px';
+  noBtn.style.top = y + 'px';
+}
+noBtn.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') dodge(e); });
+noBtn.addEventListener('pointerdown', dodge);
+noBtn.addEventListener('click', e => { if (converted) sayYes(); else dodge(e); });
+yesBtn.addEventListener('click', sayYes);
+
+function taskPoints() {
+  if (noCount === 0) return 5;
+  if (noCount <= 2) return 4;
+  if (noCount <= 5) return 3;
+  return 2; // still points, she said yes after all
+}
+function sayYes() {
+  clearInterval(stopwatchTimer);
+  taskSeconds = taskStart ? (performance.now() - taskStart) / 1000 : 0;
+  noBtn.style.position = ''; // reset so it doesn't float over later scenes
+  const pts = taskPoints();
+  $('#taskResult').textContent = `⏱️ Task completed in ${taskSeconds.toFixed(1)}s · ${pts} point${pts === 1 ? '' : 's'}`;
+  show('yes');
+  confetti();
+  if (noCount === 0) achievement('⚡', 'First try! Wavefunction collapsed to YES');
+  else achievement('🏆', `Said yes after ${noCount} plot twist${noCount === 1 ? '' : 's'}`);
+}
+$('#toMontage').addEventListener('click', () => show('montage'));
+
+/* ---------- Celine's theme: an original little waltz, synthesized in the browser ---------- */
+let audioCtx;
+function noteFreq(n) {
+  const steps = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  const midi = 12 * (+n.slice(-1) + 1) + steps[n[0]];
+  return 440 * 2 ** ((midi - 69) / 12);
+}
+function playNote(freq, when, dur, vol) {
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0, when);
+  g.gain.linearRampToValueAtTime(vol, when + .015);
+  g.gain.exponentialRampToValueAtTime(.0008, when + dur * 1.8);
+  g.connect(audioCtx.destination);
+  [[1, 'sine', 1], [2, 'triangle', .18], [3, 'sine', .06]].forEach(([mult, type, amp]) => {
+    const o = audioCtx.createOscillator(), og = audioCtx.createGain();
+    o.type = type; o.frequency.value = freq * mult; og.gain.value = amp;
+    o.connect(og); og.connect(g); o.start(when); o.stop(when + dur * 1.9);
+  });
+}
+$('#themeBtn').addEventListener('click', () => {
+  audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+  audioCtx.resume();
+  const beat = .42, t0 = audioCtx.currentTime + .05;
+  const melody = [['E5',.5],['G5',.5],['C6',1],['B5',.5],['A5',.5],['G5',1],['E5',.5],['F5',.5],['G5',.5],['A5',.5],['G5',1.5],
+                  [null,.5],['C5',.5],['E5',.5],['G5',1],['F5',.5],['E5',.5],['D5',1],['E5',.5],['G5',.5],['C6',2]];
+  const bass = [['C3',2],['G2',2],['A2',2],['G2',2],['F2',2],['G2',2],['C3',3]];
+  let t = t0;
+  for (const [n, b] of melody) { if (n) playNote(noteFreq(n), t, b * beat, .16); t += b * beat; }
+  t = t0;
+  for (const [n, b] of bass) { playNote(noteFreq(n), t, b * beat, .09); t += b * beat; }
+  const btn = $('#themeBtn');
+  btn.disabled = true; btn.textContent = '🎶 Now playing: Celine\'s theme';
+  setTimeout(() => { btn.disabled = false; btn.textContent = '🎹 Play it again'; }, 15 * beat * 1000 + 800);
+  achievement('🎼', 'Every leading lady gets a theme song');
+});
+
+/* ---------- Scene 5: montage choices (with "Other" everywhere) ---------- */
+function buildChips(group, options, multi = false) {
+  const box = $(`.chips[data-group="${group}"]`);
+  [...options, '✍️ Other'].forEach((label, i) => {
+    const isOther = i === options.length;
+    const l = document.createElement('label');
+    l.className = 'chip';
+    l.innerHTML = `<input type="${multi ? 'checkbox' : 'radio'}" name="${group}" value="${isOther ? '__other' : ''}"><span></span>`;
+    if (!isOther) $('input', l).value = label;
+    $('span', l).textContent = label;
+    box.appendChild(l);
+  });
+  const otherBox = $(`.other-input[data-other-for="${group}"]`);
+  box.addEventListener('change', e => {
+    const otherChecked = $(`input[name="${group}"][value="__other"]`).checked;
+    otherBox.classList.toggle('show', otherChecked);
+    if (otherChecked && e.target.value === '__other') $('input', otherBox).focus();
+    box.closest('fieldset').classList.remove('missing');
+  });
+}
+buildChips('time', CONFIG.times);
+buildChips('activity', CONFIG.activities, true);
+buildChips('food', CONFIG.foods, true);
+buildChips('dress', CONFIG.dressCodes);
+buildChips('pay', CONFIG.whoPays);
+
+const dateInput = $('#dateInput');
+dateInput.min = new Date().toISOString().slice(0, 10);
+[dateInput, $('#dateOther')].forEach(el => el.addEventListener('input', () => $('#fs-when').classList.remove('missing')));
+
+function getChoice(group) {
+  const otherText = $(`.other-input[data-other-for="${group}"] input`).value.trim();
+  return $$(`input[name="${group}"]:checked`)
+    .map(i => i.value === '__other' ? otherText : i.value)
+    .filter(Boolean)
+    .join(' + ');
+}
+function getWhen() {
+  const parts = [];
+  if (dateInput.value) {
+    parts.push(new Date(dateInput.value + 'T12:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }));
+  }
+  const other = $('#dateOther').value.trim();
+  if (other) parts.push(other);
+  return parts.join(' / ');
+}
+
+let answers = {};
+$('#dateForm').addEventListener('submit', e => {
+  e.preventDefault();
+  answers = {
+    when: getWhen(),
+    time: getChoice('time'),
+    activity: getChoice('activity'),
+    food: getChoice('food'),
+    dress: getChoice('dress'),
+    pay: getChoice('pay'),
+    notes: $('#notes').value.trim(),
+  };
+  const missing = [];
+  if (!answers.when || !answers.time) missing.push(['fs-when', 'when']);
+  if (!answers.activity) missing.push(['fs-activity', 'what we\'re doing']);
+  if (!answers.food) missing.push(['fs-food', 'the food']);
+  if (!answers.dress) missing.push(['fs-dress', 'the dress code']);
+  if (!answers.pay) missing.push(['fs-pay', 'who pays']);
+  $$('fieldset').forEach(f => f.classList.remove('missing'));
+  if (missing.length) {
+    missing.forEach(([id]) => $('#' + id).classList.add('missing'));
+    $('#formError').textContent = `🎬 The director still needs: ${missing.map(m => m[1]).join(', ')}.`;
+    $('#' + missing[0][0]).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  $('#formError').textContent = '';
+  rollCredits();
+});
+
+/* ---------- Scene 6: credits + WhatsApp ---------- */
+function rollCredits() {
+  show('credits');
+  achievement('🎞️', 'Co-director credit earned');
+  const rows = [
+    ['Starring', `${CONFIG.herName} & ${CONFIG.yourName}`],
+    ['Release date', `${answers.when} · ${answers.time}`],
+    ['Filming location', answers.activity],
+    ['Catering', answers.food],
+    ['Wardrobe', answers.dress],
+    ['Budget', answers.pay],
+    ['Task time', `${taskSeconds.toFixed(1)}s · ${taskPoints()} points`],
+  ];
+  if (answers.notes) rows.push(["Director's notes", `“${answers.notes}”`]);
+  const list = $('#creditList');
+  list.innerHTML = '';
+  rows.forEach(([role, val], i) => {
+    const d = document.createElement('div');
+    d.className = 'credit';
+    d.innerHTML = '<div class="role"></div><div class="val"></div>';
+    $('.role', d).textContent = role;
+    $('.val', d).textContent = val;
+    list.appendChild(d);
+    setTimeout(() => d.classList.add('show'), 300 + i * 600);
+  });
+  const disc = document.createElement('p');
+  disc.className = 'disclaimer credit';
+  disc.textContent = 'No buttons were harmed in the making of this film. (Well… one.)';
+  list.appendChild(disc);
+  setTimeout(() => disc.classList.add('show'), 300 + rows.length * 600);
+  setTimeout(() => $('#postCredits').classList.add('show'), 1200 + rows.length * 600);
+}
+
+function messageText() {
+  return [
+    '🎬 THE HOLI-DATE: official booking',
+    '',
+    `📅 When: ${answers.when}, ${answers.time}`,
+    `🎄 What: ${answers.activity}`,
+    `🍽️ Food: ${answers.food}`,
+    `👗 Dress code: ${answers.dress}`,
+    `💸 Who pays: ${answers.pay}`,
+    answers.notes ? `📝 Notes: ${answers.notes}` : null,
+    '',
+    `⏱️ Task completed in ${taskSeconds.toFixed(1)}s: ${taskPoints()} points`,
+    noCount > 0
+      ? `P.S. The No button ran away ${noCount} time${noCount === 1 ? '' : 's'}. 😏`
+      : 'P.S. I said yes on the first try. ⚡',
+  ].filter(l => l !== null).join('\n');
+}
+
+$('#waBtn').addEventListener('click', () => {
+  const num = CONFIG.whatsappNumber.replace(/\D/g, '');
+  const text = encodeURIComponent(messageText());
+  // Without a number, WhatsApp opens and lets her pick the chat herself.
+  const url = num ? `https://wa.me/${num}?text=${text}` : `https://wa.me/?text=${text}`;
+  window.open(url, '_blank');
+});
+$('#copyBtn').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(messageText());
+    $('#copyBtn').textContent = 'Copied! ✅';
+  } catch {
+    $('#copyBtn').textContent = 'Copy failed: take a screenshot 📸';
+  }
+  setTimeout(() => $('#copyBtn').textContent = 'Copy as text', 2500);
+});
+$('#editBtn').addEventListener('click', () => show('montage'));
+
+/* ---------- Trailer: title cards + brass hits ----------
+   ✏️ Edit the trailer here. One line = one card.
+   text: what's shown (<br> = new line, <i>…</i> = italic, <b>…</b> = gold)
+   hit:  true plays the cinematic "BWAAAM"
+   hold: how long the card stays (ms, default 2300)
+   cls:  style: 'big' (gold title), 'caps' (small capitals), 'credit-card' (smaller text) */
+const HER = CONFIG.herName;
+const TRAILER = [
+  { text: 'Coming soon…' },
+  { text: 'Years ago, they shared a physics classroom.' },
+  { text: 'They survived the same exams…' },
+  { text: '…the same lab reports…' },
+  { text: '…and the same professor’s terrible jokes.<span class="aside">(Some people never recovered. Keep watching.)</span>', hold: 3000 },
+  { text: 'Then life happened.' },
+  { text: 'Until one ordinary midday…' },
+  { text: '…in a random Belgian supermarket…' },
+  { text: '…they ran into each other in the fish section.<span class="aside">Plenty of fish in the sea. Only one that mattered.</span>', hit: true, hold: 3400 },
+  { text: 'She bakes like a legend.' },
+  { text: 'He tells dad jokes without even being a dad.<span class="aside">(He already has three fish puns ready. Sorry in advance.)</span>', hold: 3400 },
+  { text: 'One question.', hit: true },
+  { text: 'Two buttons.' },
+  { text: 'And one of them…<br>runs away.', hold: 2600 },
+  { text: 'From the studio that brought you<br><i>“Rehearsing in the Mirror”</i><br>and <i>“Waiting for the Right Moment”</i>', cls: 'credit-card', hold: 3400 },
+  { text: `Starring <b>${HER}</b><br>as the leading lady`, cls: 'credit-card', hold: 2800 },
+  { text: `Co-starring <b>${CONFIG.yourName}</b><br>as the guy with the dad jokes`, cls: 'credit-card', hold: 2800 },
+  { text: 'The Holi-date', cls: 'big', hit: true, hold: 3000 },
+  { text: 'Coming to a cozy place near you', cls: 'caps' },
+];
+
+let soundOn = true, trailerAbort = false;
+const wait = ms => new Promise(r => setTimeout(r, ms));
+function brassHit() {
+  if (!soundOn) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx.resume();
+    const t = audioCtx.currentTime;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(250, t);
+    filter.frequency.linearRampToValueAtTime(1100, t + .12);
+    filter.frequency.exponentialRampToValueAtTime(180, t + 2.6);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(.2, t + .06);
+    g.gain.exponentialRampToValueAtTime(.001, t + 3);
+    filter.connect(g); g.connect(audioCtx.destination);
+    ['C2', 'G2', 'C3', 'G3'].forEach(n => [-6, 6].forEach(detune => {
+      const o = audioCtx.createOscillator();
+      o.type = 'sawtooth'; o.frequency.value = noteFreq(n); o.detune.value = detune;
+      o.connect(filter); o.start(t); o.stop(t + 3.1);
+    }));
+  } catch { /* no audio: the trailer still works silently */ }
+}
+
+async function playTrailer(withSound) {
+  soundOn = withSound;
+  trailerAbort = false;
+  if (soundOn) { // unlock audio on this tap (needed on iPhone)
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx.resume();
+  }
+  $('#trailerStart').style.display = 'none';
+  $('#trailerSkipRun').style.display = 'block';
+  const card = $('#trailerCard');
+  card.style.display = 'block';
+  await wait(600);
+  for (const c of TRAILER) {
+    if (trailerAbort) return;
+    card.className = 'trailer-card ' + (c.cls || '');
+    card.innerHTML = c.text;
+    void card.offsetWidth; // restart the fade/zoom
+    card.classList.add('show');
+    if (c.hit) brassHit();
+    await wait(c.hold || 2300);
+    await wait(300);
+    if (trailerAbort) return;
+    card.classList.remove('show');
+    await wait(650);
+  }
+  endTrailer();
+}
+function endTrailer() {
+  if (trailerAbort) return;
+  trailerAbort = true;
+  $('#trailerSkipRun').style.display = 'none';
+  show('poster');
+}
+$('#trailerPlay').addEventListener('click', () => playTrailer(true));
+$('#trailerMuted').addEventListener('click', () => playTrailer(false));
+$('#trailerSkip').addEventListener('click', endTrailer);
+$('#trailerSkipRun').addEventListener('click', () => { achievement('⏭️', 'Skipped the trailer. Bold.'); endTrailer(); });
+
+/* ---------- Nerdy easter eggs ---------- */
+// Konami code: ↑ ↑ ↓ ↓ ← → ← → B A
+const konami = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let kIdx = 0;
+addEventListener('keydown', e => {
+  kIdx = (e.key.toLowerCase() === konami[kIdx].toLowerCase()) ? kIdx + 1 : (e.key === 'ArrowUp' ? 1 : 0);
+  if (kIdx === konami.length) { kIdx = 0; confetti(); achievement('🕹️', 'Cheat code accepted: +30 lives, +1 date', 'konami'); }
+});
+// Tap the poster title 5 times
+let titleTaps = 0;
+$('.poster h1').addEventListener('click', () => { if (++titleTaps === 5) achievement('🔍', 'Easter egg hunter: you clicked the title 5 times'); });
+// Tap her name on the poster 3 times: the sea lion pun
+let nameTaps = 0;
+const starName = $('.star-name');
+starName.style.cursor = 'pointer';
+starName.addEventListener('click', () => {
+  if (++nameTaps === 3) {
+    starName.textContent = 'Sea-lion 🦭';
+    achievement('🦭', 'Ce-line → Sea-lion. I\'ll see myself out.');
+    setTimeout(() => starName.textContent = CONFIG.herName, 2500);
+  }
+});
+// A message for anyone who opens DevTools
+console.log('%c👀 Inspecting the source code?', 'font-size:18px;font-weight:bold;color:#f5c76b');
+console.log(`%cOf course you are. That's exactly why I asked you out, ${CONFIG.herName}. 💚`, 'font-size:13px');
+console.log('%cIn a universe full of variables, you are my favourite constant. 🦦', 'font-size:13px;font-style:italic');
+</script>
+</body>
+</html>
