@@ -116,7 +116,9 @@
   body.in-trailer .bar { height: 11vh; } /* widescreen 2.39:1 letterbox during the trailer */
   .trailer-start { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 14px; }
   .trailer-start h2 { font-size: clamp(1.8rem, 7vw, 2.6rem); color: var(--gold); margin-top: 8px; }
-  .trailer-start .muted { margin: 0 0 10px; }
+  .trailer-start .muted { margin: 0 0 10px; line-height: 1.6; }
+  .maestro { width: min(100%, 420px); min-height: 80px; margin-bottom: 6px; }
+  .maestro iframe { border-radius: 12px; display: block; }
 
   /* film look */
   .fx { position: fixed; pointer-events: none; }
@@ -371,7 +373,8 @@
   <div class="trailer-start" id="trailerStart">
     <div class="presents"><span data-studio></span> presents</div>
     <h2>Before the feature presentation…</h2>
-    <p class="muted">an 80-second trailer with an original score.<br>Turn your sound on. 🔊</p>
+    <p class="muted">an 80-second trailer. Turn your sound on. 🔊<br>Soundtrack: “Maestro” by Hans Zimmer, from your favourite movie.</p>
+    <div class="maestro"><div id="maestroEmbed"></div></div>
     <button class="btn" id="trailerPlay">▶ Watch the trailer</button>
     <button class="btn ghost" id="trailerMuted">Watch without sound</button>
     <button class="skip" id="trailerSkip">skip trailer</button>
@@ -474,7 +477,7 @@
   <div class="task-result" id="taskResult"></div>
   <p>We met in a heatwave. Now the snow falls a little slower. Somewhere, a woman who hasn't cried since she was fifteen finally sheds a single tear.<br><br>Every leading lady deserves her own theme song. So I had one composed for you, the same one from the trailer. (OK, my browser did.)</p>
   <button class="btn ghost" id="themeBtn" style="margin-bottom:12px">🎹 Play Celine's theme</button>
-  <a class="soundtrack" href="https://open.spotify.com/search/The%20Holiday%20soundtrack" target="_blank" rel="noopener">🎧 Want the real thing? The Holiday soundtrack on Spotify</a>
+  <a class="soundtrack" href="https://open.spotify.com/track/03ib2ZaOZzq6iAFuiDhSzp" target="_blank" rel="noopener">🎧 Listen to “Maestro” again on Spotify</a>
   <p style="margin-top:0">Now let's write the rest of the movie together.</p>
   <button class="btn" id="toMontage">🎬 Roll the montage</button>
 </section>
@@ -1156,12 +1159,13 @@ const score = (() => {
     ['D4', 'F#4', 'A4', 'D5'].forEach((n, j) => at(4 * BAR + j * .12, w => piano(n, w, 3, .06)));
     return ev.sort((a, b) => a.t - b.t);
   }
-  function play(events) {
+  function play(events, offset = 0) {           // offset: start partway into the cue (seconds)
     ensureAudio();
     stop(true);
     setup();
-    const t0 = audioCtx.currentTime + .08;
+    const t0 = audioCtx.currentTime + .08 - offset;
     let i = 0;
+    while (i < events.length && events[i].t < offset) i++;
     const pump = () => {                          // schedule ~1.2 s ahead, so long cues stay light on phones
       const now = audioCtx.currentTime - t0;
       while (i < events.length && events[i].t < now + 1.2) { events[i].fn(t0 + events[i].t); i++; }
@@ -1180,7 +1184,7 @@ const score = (() => {
     }
   }
   return {
-    trailer: hitTimes => play(trailerCue(hitTimes)),
+    trailer: (hitTimes, offset = 0) => play(trailerCue(hitTimes), offset),
     theme: () => play(themeCue()),
     themeLength: (4 * BAR + 3) * 1000,
     stop,
@@ -1381,6 +1385,48 @@ const TRAILER_END = 82.4;
 
 let trailerRun = 0, trailerDone = false;
 const wait = ms => new Promise(r => setTimeout(r, ms));
+
+/* ---------- Soundtrack: "Maestro" via the official Spotify embed ----------
+   The real song plays through Spotify's own player (legal, nothing is re-hosted).
+   If it can't play, or stops early (a 30-second preview when she isn't logged in to Spotify),
+   the original score takes over from that exact moment, so the trailer never goes silent. */
+const MAESTRO_URI = 'spotify:track:03ib2ZaOZzq6iAFuiDhSzp';
+let maestro = null, maestroPlaying = false;
+let lastPos = -1, lastProgressAt = 0, maestroDur = 0, maestroPos = 0;
+let trailerMode = null, trailerT0 = 0; // 'maestro' | 'score' | 'silent'
+const trailerHits = () => TRAILER.filter(c => c.hit).map(c => c.at);
+window.onSpotifyIframeApiReady = api => {
+  api.createController($('#maestroEmbed'), { uri: MAESTRO_URI, width: '100%', height: 80 }, controller => {
+    maestro = controller;
+    controller.addListener('playback_update', e => {
+      const d = e.data;
+      maestroPlaying = !d.isPaused && !d.isBuffering;
+      maestroDur = d.duration; maestroPos = d.position;
+      if (d.position !== lastPos) { lastPos = d.position; lastProgressAt = performance.now(); }
+    });
+  });
+};
+// Watchdog: if the song stops moving (paused, blocked, or the 19-second preview ended)
+// while the trailer is still running, the original score takes over from that moment.
+setInterval(() => {
+  if (trailerMode !== 'maestro' || trailerDone) return;
+  const elapsed = (performance.now() - trailerT0) / 1000;
+  const stalled = performance.now() - lastProgressAt > 1600;
+  const atEnd = maestroDur > 0 && maestroPos >= maestroDur - 400;
+  if ((stalled || atEnd || !maestroPlaying) && elapsed > 1.5 && elapsed < TRAILER_END - 3) {
+    trailerMode = 'score';
+    try { score.trailer(trailerHits(), elapsed); } catch { /* stay silent */ }
+  }
+}, 400);
+async function startTrailerWithMusic() {
+  ensureAudio(); // unlock audio on this tap, in case the score is needed later (iPhone)
+  if (maestro && !maestroPlaying) {
+    try { maestro.play(); } catch { /* fall back below */ }
+    for (let i = 0; i < 20 && !maestroPlaying; i++) await wait(100);
+  }
+  lastProgressAt = performance.now();
+  playTrailer(maestroPlaying ? 'maestro' : 'score');
+}
 function setMood(mood) {
   const sec = $('#scene-trailer');
   sec.classList.remove('mood-summer', 'mood-christmas');
@@ -1395,16 +1441,17 @@ function showCard(c) {
   card.classList.add('in');
   if (c.hit) { const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }
 }
-async function playTrailer(withSound) {
+async function playTrailer(mode) {
   const run = ++trailerRun;
   trailerDone = false;
-  if (withSound) {
-    try { score.trailer(TRAILER.filter(c => c.hit).map(c => c.at)); } catch { /* no audio: plays silently */ }
+  trailerMode = mode;
+  if (mode === 'score') {
+    try { score.trailer(trailerHits()); } catch { /* no audio: plays silently */ }
   }
   $('#trailerStart').style.display = 'none';
   $('#trailerStage').classList.add('on');
   $('#trailerSkipRun').style.display = 'block';
-  const t0 = performance.now();
+  const t0 = trailerT0 = performance.now();
   for (const c of TRAILER) {
     const delay = c.at * 1000 - (performance.now() - t0);
     if (delay > 0) await wait(delay);
@@ -1419,14 +1466,15 @@ function endTrailer() {
   if (trailerDone) return;
   trailerDone = true;
   trailerRun++;
-  score.stop();
+  score.stop();        // "Maestro" keeps playing softly into the poster, if it's on
+  trailerMode = null;
   setMood('none');
   $('#trailerStage').classList.remove('on');
   $('#trailerSkipRun').style.display = 'none';
   show('poster');
 }
-$('#trailerPlay').addEventListener('click', () => playTrailer(true));
-$('#trailerMuted').addEventListener('click', () => playTrailer(false));
+$('#trailerPlay').addEventListener('click', startTrailerWithMusic);
+$('#trailerMuted').addEventListener('click', () => { if (maestro && maestroPlaying) maestro.pause(); playTrailer('silent'); });
 $('#trailerSkip').addEventListener('click', endTrailer);
 $('#trailerSkipRun').addEventListener('click', () => { achievement('⏭️', 'Skipped the trailer. Bold.'); endTrailer(); });
 
@@ -1457,5 +1505,7 @@ console.log('%c👀 Inspecting the source code?', 'font-size:18px;font-weight:bo
 console.log(`%cOf course you are. That's exactly why I asked you out, ${CONFIG.herName}. 💚`, 'font-size:13px');
 console.log('%cIn a universe full of variables, you are my favourite constant. 🦦', 'font-size:13px;font-style:italic');
 </script>
+<!-- Official Spotify embed API: plays "Maestro" through Spotify's own player -->
+<script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
 </body>
 </html>
