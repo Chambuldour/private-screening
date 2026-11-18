@@ -123,6 +123,10 @@
   .trailer-start .muted { margin: 0 0 10px; line-height: 1.6; }
   .maestro { width: min(100%, 420px); min-height: 80px; margin-bottom: 6px; }
   .maestro iframe { border-radius: 12px; display: block; }
+  .maestro.nudge { border-radius: 14px; animation: nudge 1.6s ease-in-out infinite; }
+  @keyframes nudge { 50% { box-shadow: 0 0 0 4px rgba(245,199,107,.55), 0 0 28px rgba(245,199,107,.35); } }
+  .tap-hint { display: none; margin: -4px 0 4px; color: var(--gold); font-weight: 600; font-size: .92rem; line-height: 1.5; }
+  .tap-hint.on { display: block; }
 
   /* film look */
   .fx { position: fixed; pointer-events: none; }
@@ -344,8 +348,9 @@
   <div class="trailer-start" id="trailerStart">
     <div class="presents"><span data-studio></span> presents</div>
     <h2>Before the feature presentation…</h2>
-    <p class="muted">a 75-second trailer. Turn your sound on. 🔊<br>Soundtrack: “Maestro” by Hans Zimmer, from your favourite movie.</p>
+    <p class="muted">an 80-second trailer. Turn your sound on. 🔊<br>Soundtrack: “Maestro” by Hans Zimmer, from your favourite movie.</p>
     <div class="maestro"><div id="maestroEmbed"></div></div>
+    <p class="tap-hint" id="tapHint">👆 Tap the ▶ in the Spotify player above.<br>The trailer starts together with the music.</p>
     <button class="btn" id="trailerPlay">▶ Watch the trailer</button>
     <button class="btn ghost" id="trailerMuted">Watch without sound</button>
     <button class="skip" id="trailerSkip">skip trailer</button>
@@ -388,7 +393,7 @@
     <p>Five minutes of catching up. How's life? What happened since? Behind them, her SISTER and his FRIEND exchange a look. Neither has any idea what's going on.</p>
     <p class="char"><span data-you-upper></span> (V.O.)</p>
     <p class="paren">(deep movie-trailer voice, clearly practised)</p>
-    <p class="dialog">One summer... one fish counter... one “hi”... and the most improbable meet-cute in Belgian history. This Christmas... the sequel.</p>
+    <p class="dialog">One summer... one fish counter... one “hi”... and the most improbable meet-cute in history. This Christmas... the sequel.</p>
     <p class="slug">MONTAGE – THE NEXT MONTHS</p>
     <p>Texting. Hanging out. More texting. Laughing at the same stupid jokes. Phones permanently at 3% battery.</p>
     <p>And, secretly, both a little scared by how well they understand each other.</p>
@@ -1139,13 +1144,13 @@ const TRAILER = [
   { at: 48.4, dur: 2.8, text: 'And one of them…<br>will run away.' },
   /* 51.2 – 52.4: one second of black */
   { at: 52.4, dur: 3.4, hit: true, cls: 'xl', text: 'Hopefully very soon…', mood: 'christmas' },
-  { at: 56.0, dur: 2.8, cls: 'credit-card', text: `Starring <b>${HER}</b><br>as the leading lady<span class="aside">Bakes like a legend. Knits like a pro. Pushes up her glasses like nobody else.</span>` },
-  { at: 59.0, dur: 2.8, cls: 'credit-card', text: `Co-starring <b>${CONFIG.yourName}</b><br>as the guy who said hi first<span class="aside">Dad jokes. Golf. And the ability to care.</span>` },
-  { at: 62.0, dur: 3.6, cls: 'credit-card', text: 'From the studio that brought you<br><i>“Rehearsing in the Mirror”</i><br>and <i>“Waiting for the Right Moment to Say Hi”</i>' },
-  { at: 66.0, dur: 4.6, hit: true, cls: 'big', text: 'The Holi-date' },
-  { at: 71.0, dur: 3.4, cls: 'caps-card', text: 'Coming soon…' },
+  { at: 56.0, dur: 5.6, cls: 'credit-card', text: `Starring <b>${HER}</b><br>as the leading lady<span class="aside">Bakes like a legend. Knits like a pro. Pushes up her glasses like nobody else.</span>` },
+  { at: 62.0, dur: 5.6, cls: 'credit-card', text: `Co-starring <b>${CONFIG.yourName}</b><br>as the guy who said hi first<span class="aside">Dad jokes. Golf. And the ability to care.</span>` },
+  { at: 68.0, dur: 3.6, cls: 'credit-card', text: 'From the studio that brought you<br><i>“Rehearsing in the Mirror”</i><br>and <i>“Waiting for the Right Moment to Say Hi”</i>' },
+  { at: 72.0, dur: 4.6, hit: true, cls: 'big', text: 'The Holi-date' },
+  { at: 77.0, dur: 3.4, cls: 'caps-card', text: 'Coming soon…' },
 ];
-const TRAILER_END = 74.8;
+const TRAILER_END = 80.8;
 
 let trailerRun = 0, trailerDone = false;
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -1155,22 +1160,31 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
    This is the only music on the page. */
 const MAESTRO_URI = 'spotify:track:03ib2ZaOZzq6iAFuiDhSzp';
 let maestro = null, maestroPlaying = false;
+// The trailer starts the moment "Maestro" really plays, however it was started:
+// our button, or her tapping ▶ in the Spotify player itself (needed on iPhone, where
+// Safari doesn't let a page press play inside Spotify's player).
+const onStartScreen = () => $('#trailerStart').style.display !== 'none' && $('#scene-trailer').classList.contains('active');
 window.onSpotifyIframeApiReady = api => {
   api.createController($('#maestroEmbed'), { uri: MAESTRO_URI, width: '100%', height: 80 }, controller => {
     maestro = controller;
-    controller.addListener('playback_update', e => { maestroPlaying = !e.data.isPaused && !e.data.isBuffering; });
+    controller.addListener('playback_update', e => {
+      maestroPlaying = !e.data.isPaused && !e.data.isBuffering;
+      if (maestroPlaying && onStartScreen()) playTrailer();
+    });
   });
 };
 async function startTrailerWithMusic() {
   const btn = $('#trailerPlay');
-  if (maestro && !maestroPlaying) {
-    try { maestro.seek(0); maestro.play(); } catch { /* plays without music */ }
-    btn.disabled = true; btn.textContent = '🎵 Cueing the music…';
-    // the first card waits for the first note, so music and trailer start together
-    for (let i = 0; i < 60 && !maestroPlaying; i++) await wait(100);
-    btn.disabled = false; btn.textContent = '▶ Watch the trailer';
+  if (maestroPlaying) return playTrailer();
+  try { maestro && maestro.play(); } catch { /* she'll tap the player instead */ }
+  btn.disabled = true; btn.textContent = '🎵 Cueing the music…';
+  for (let i = 0; i < 25 && !maestroPlaying; i++) await wait(100);
+  btn.disabled = false; btn.textContent = '▶ Watch the trailer';
+  if (!maestroPlaying && onStartScreen()) {
+    // the browser blocked it: ask her to tap Spotify's own play button
+    $('#tapHint').classList.add('on');
+    $('.maestro').classList.add('nudge');
   }
-  playTrailer();
 }
 function setMood(mood) {
   const sec = $('#scene-trailer');
